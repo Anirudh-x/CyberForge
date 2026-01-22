@@ -1,0 +1,22 @@
+{
+  "id": "sql_injection",
+  "name": "SQL Injection",
+  "domain": "web",
+  "difficulty": "medium",
+  "description": "Exploit SQL injection vulnerability to gain admin access",
+  "solve_method": "gui",
+  "port": 3000,
+  "terminal_enabled": false,
+  "points": 75,
+  "flag": "FLAG{SQL_INJECTION_MASTER}",
+  "hints": [
+    "SQL queries are built using string concatenation",
+    "Try using quotes and logical operators",
+    "Classic payload: ' OR '1'='1"
+  ],
+  "learning_objectives": [
+    "Understand SQL injection vulnerabilities",
+    "Learn authentication bypass techniques",
+    "Practice SQL injection exploitation"
+  ]
+}

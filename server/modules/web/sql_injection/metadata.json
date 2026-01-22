@@ -1,0 +1,26 @@
+{
+  "name": "SQL Injection",
+  "difficulty": "medium",
+  "points": 75,
+  "flag": "FLAG{SQL_1NJ3CT10N_M4ST3R}",
+  "route": "/login",
+  "solve_method": "gui",
+  "port": 3000,
+  "solution": {
+    "explanation": "This lab contains a SQL injection vulnerability in the login form. The application doesn't properly sanitize user input, allowing attackers to manipulate SQL queries.",
+    "steps": [
+      "Navigate to http://localhost:PORT/login",
+      "Observe the username and password fields",
+      "Enter ' OR '1'='1 in the username field",
+      "Enter anything in the password field",
+      "Submit the form to bypass authentication",
+      "The flag will be displayed on the admin dashboard"
+    ],
+    "payload": "' OR '1'='1' --",
+    "hints": [
+      "SQL comments use -- to ignore the rest of the query",
+      "The condition '1'='1' is always true",
+      "Try to make the WHERE clause always evaluate to true"
+    ]
+  }
+}

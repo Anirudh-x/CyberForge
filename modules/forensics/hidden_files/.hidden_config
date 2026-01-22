@@ -1,0 +1,17 @@
+SECRET_DATA_LEVEL_1=This is just a decoy file
+ADMIN_PASSWORD=NotTheFlag
+DATABASE_URL=postgres://localhost:5432/db
+
+# Hidden below...
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+FLAG{FORENSICS_HIDDEN_DATA_FOUND}

@@ -1,0 +1,486 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import '../styles/MachineSolver.css';
+
+const MachineSolver = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [machine, setMachine] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [flagInput, setFlagInput] = useState('');
+  const [flagResult, setFlagResult] = useState(null);
+  const [submittingFlag, setSubmittingFlag] = useState(false);
+  const [uploadingReport, setUploadingReport] = useState(false);
+  const [reportFile, setReportFile] = useState(null);
+  const [userStats, setUserStats] = useState(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    fetchMachine();
+    fetchUserStats();
+    
+    // Poll for machine status if it's building
+    const interval = setInterval(() => {
+      if (machine?.status === 'building') {
+        fetchMachine();
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [id, isAuthenticated]);
+
+  const fetchMachine = async () => {
+    try {
+      const response = await fetch(`/api/machines/${id}`, {
+        credentials: 'include'
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setMachine(data.machine);
+        setError('');
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError('Error loading machine');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserStats = async () => {
+    try {
+      const response = await fetch('/api/flags/stats', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUserStats(data.stats);
+      }
+    } catch (err) {
+      console.error('Error fetching user stats:', err);
+    }
+  };
+
+  const handleFlagSubmit = async (e) => {
+    e.preventDefault();
+    if (!flagInput.trim() || !machine) return;
+
+    setSubmittingFlag(true);
+    setFlagResult(null);
+
+    try {
+      const response = await fetch('/api/flags/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          machineId: machine._id,
+          moduleId: machine.modules[0],
+          flag: flagInput.trim()
+        })
+      });
+
+      const data = await response.json();
+      setFlagResult(data);
+
+      if (data.correct) {
+        setFlagInput('');
+        fetchUserStats();
+        fetchMachine();
+      }
+    } catch (err) {
+      setFlagResult({
+        correct: false,
+        message: 'Error submitting flag'
+      });
+    } finally {
+      setSubmittingFlag(false);
+    }
+  };
+
+  const handleReportUpload = async (e) => {
+    e.preventDefault();
+    if (!reportFile || !machine) return;
+
+    const formData = new FormData();
+    formData.append('report', reportFile);
+
+    setUploadingReport(true);
+
+    try {
+      const response = await fetch(`/api/reports/${machine._id}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✅ Lab report uploaded successfully!');
+        setReportFile(null);
+      } else {
+        alert(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      alert('❌ Error uploading report');
+      console.error(err);
+    } finally {
+      setUploadingReport(false);
+    }
+  };
+
+  const renderPointsDisplay = () => {
+    if (!userStats) return null;
+
+    return (
+      <div className="points-display">
+        <h3>🏆 Your Points</h3>
+        <div className="points-grid">
+          <div className="point-item total">
+            <span className="label">Total Points</span>
+            <span className="value">{userStats.totalPoints}</span>
+          </div>
+          <div className="point-item">
+            <span className="label">Web</span>
+            <span className="value">{userStats.domainPoints.web}</span>
+          </div>
+          <div className="point-item">
+            <span className="label">Red Team</span>
+            <span className="value">{userStats.domainPoints.red_team}</span>
+          </div>
+          <div className="point-item">
+            <span className="label">Blue Team</span>
+            <span className="value">{userStats.domainPoints.blue_team}</span>
+          </div>
+          <div className="point-item">
+            <span className="label">Cloud</span>
+            <span className="value">{userStats.domainPoints.cloud}</span>
+          </div>
+          <div className="point-item">
+            <span className="label">Forensics</span>
+            <span className="value">{userStats.domainPoints.forensics}</span>
+          </div>
+        </div>
+        <p className="solved-count">
+          Solved: {userStats.solvedCount} vulnerabilities | {userStats.machinesSolved} machines
+        </p>
+      </div>
+    );
+  };
+
+  const renderFlagSubmission = () => {
+    return (
+      <div className="flag-submission">
+        <h3>🚩 Submit Flag</h3>
+        <form onSubmit={handleFlagSubmit}>
+          <input
+            type="text"
+            value={flagInput}
+            onChange={(e) => setFlagInput(e.target.value)}
+            placeholder="Enter flag (e.g., FLAG{...})"
+            className="flag-input"
+            disabled={submittingFlag}
+          />
+          <button 
+            type="submit" 
+            className="btn-submit-flag"
+            disabled={submittingFlag || !flagInput.trim()}
+          >
+            {submittingFlag ? '⏳ Checking...' : '✓ Submit Flag'}
+          </button>
+        </form>
+        
+        {flagResult && (
+          <div className={`flag-result ${flagResult.correct ? 'correct' : 'incorrect'}`}>
+            {flagResult.correct ? (
+              <>
+                <p className="result-message">✅ {flagResult.message}</p>
+                <p className="points-earned">+{flagResult.points} points earned!</p>
+                <p className="total-points">Total Points: {flagResult.totalPoints}</p>
+                {flagResult.machineSolved && (
+                  <p className="machine-complete">🎉 Machine completed! You can now upload your lab report.</p>
+                )}
+              </>
+            ) : (
+              <p className="result-message">❌ {flagResult.message}</p>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderReportUpload = () => {
+    // Only show report upload if machine is solved
+    if (!userStats?.solvedMachines?.includes(machine?._id)) {
+      return null;
+    }
+
+    return (
+      <div className="report-upload">
+        <h3>📄 Upload Lab Report</h3>
+        <p className="hint">Upload your lab report (PDF, Markdown, or Text file)</p>
+        <form onSubmit={handleReportUpload}>
+          <input
+            type="file"
+            accept=".pdf,.md,.txt"
+            onChange={(e) => setReportFile(e.target.files[0])}
+            className="file-input"
+            disabled={uploadingReport}
+          />
+          <button 
+            type="submit" 
+            className="btn-upload-report"
+            disabled={uploadingReport || !reportFile}
+          >
+            {uploadingReport ? '⏳ Uploading...' : '📤 Upload Report'}
+          </button>
+        </form>
+        {reportFile && (
+          <p className="file-info">Selected: {reportFile.name} ({(reportFile.size / 1024).toFixed(2)} KB)</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderSolveInterface = () => {
+    if (!machine) return null;
+
+    if (machine.status === 'building') {
+      return (
+        <div className="building-status">
+          <div className="spinner"></div>
+          <h2>🔧 Building Your Machine...</h2>
+          <p>Setting up Docker container and configuring environment</p>
+          <p className="hint">This may take 30-60 seconds</p>
+        </div>
+      );
+    }
+
+    if (machine.status === 'error') {
+      return (
+        <div className="error-status">
+          <h2>❌ Machine Build Failed</h2>
+          <p>There was an error building your machine. Please try creating it again.</p>
+          <button onClick={() => navigate('/my-machines')} className="btn-back">
+            ← Back to My Machines
+          </button>
+        </div>
+      );
+    }
+
+    if (machine.status !== 'running') {
+      return (
+        <div className="stopped-status">
+          <h2>⏸️ Machine Stopped</h2>
+          <p>This machine is currently stopped.</p>
+          <button onClick={() => navigate('/my-machines')} className="btn-back">
+            ← Back to My Machines
+          </button>
+        </div>
+      );
+    }
+
+    // Machine is running - render appropriate interface
+    switch (machine.solveMethod) {
+      case 'gui':
+      case 'api':
+        return renderGUIInterface();
+      case 'terminal':
+        return renderTerminalInterface();
+      case 'file':
+        return renderFileInterface();
+      default:
+        return renderGUIInterface();
+    }
+  };
+
+  const renderGUIInterface = () => {
+    return (
+      <div className="solve-interface">
+        {renderPointsDisplay()}
+        
+        <div className="interface-header">
+          <h2>🌐 Lab Interface: {machine.name}</h2>
+          <p className="domain-badge">{machine.domain.replace('_', ' ').toUpperCase()}</p>
+        </div>
+        
+        <div className="lab-info">
+          <p><strong>Access URL:</strong> <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="access-link">
+            {machine.access?.url || machine.accessUrl}
+          </a></p>
+          <p><strong>Status:</strong> <span className="status-running">RUNNING</span></p>
+          <p><strong>Machine Points:</strong> <span className="machine-points">{machine.totalPoints || 0} pts</span></p>
+          <p className="hint">💡 Open the lab in a new tab to solve the challenge</p>
+        </div>
+
+        <div className="iframe-container">
+          <iframe
+            src={machine.access?.url || machine.accessUrl}
+            title={machine.name}
+            className="lab-iframe"
+          />
+        </div>
+
+        {renderFlagSubmission()}
+        {renderReportUpload()}
+
+        <div className="actions">
+          <button 
+            onClick={() => window.open(machine.access?.url || machine.accessUrl, '_blank')} 
+            className="btn-open"
+          >
+            🔗 Open in New Tab
+          </button>
+          <button onClick={() => navigate('/my-machines')} className="btn-back">
+            ← Back to My Machines
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTerminalInterface = () => {
+    const sshCommand = machine.access?.terminal || `ssh user@localhost -p ${machine.port || '8022'}`;
+    
+    return (
+      <div className="solve-interface">
+        {renderPointsDisplay()}
+        
+        <div className="interface-header">
+          <h2>💻 Terminal Access: {machine.name}</h2>
+          <p className="domain-badge">{machine.domain.replace('_', ' ').toUpperCase()}</p>
+        </div>
+        
+        <div className="lab-info">
+          <p><strong>Port:</strong> {machine.port}</p>
+          <p><strong>Status:</strong> <span className="status-running">RUNNING</span></p>
+          <p><strong>Machine Points:</strong> <span className="machine-points">{machine.totalPoints || 0} pts</span></p>
+          <p className="terminal-hint">💡 Use an SSH client (Terminal/PuTTY) to connect to this machine</p>
+        </div>
+
+        <div className="terminal-instructions">
+          <h3>🔐 SSH Connection Command:</h3>
+          <div className="code-block">
+            <code>{sshCommand}</code>
+          </div>
+          <p className="hint">💡 Copy the command above and paste it in your terminal</p>
+          <p className="hint">🔑 Default credentials: <code>ctfuser:password123</code></p>
+          <p className="hint">🚩 Find the flag in <code>/root/</code> directory</p>
+        </div>
+
+        <div className="lab-objectives">
+          <h3>📋 Objectives:</h3>
+          <ul>
+            <li>Connect to the SSH server using the provided credentials</li>
+            <li>Escalate privileges to root user</li>
+            <li>Find and retrieve the flag</li>
+          </ul>
+        </div>
+
+        {renderFlagSubmission()}
+        {renderReportUpload()}
+
+        <div className="actions">
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(sshCommand);
+              alert('SSH command copied to clipboard!');
+            }} 
+            className="btn-open"
+          >
+            📋 Copy SSH Command
+          </button>
+          <button onClick={() => navigate('/my-machines')} className="btn-back">
+            ← Back to My Machines
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderFileInterface = () => {
+    return (
+      <div className="solve-interface">
+        {renderPointsDisplay()}
+        
+        <div className="interface-header">
+          <h2>📁 File Analysis: {machine.name}</h2>
+          <p className="domain-badge">{machine.domain.replace('_', ' ').toUpperCase()}</p>
+        </div>
+        
+        <div className="lab-info">
+          <p><strong>Lab URL:</strong> <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="access-link">
+            {machine.access?.url || machine.accessUrl}
+          </a></p>
+          <p><strong>Status:</strong> <span className="status-running">RUNNING</span></p>
+          <p><strong>Machine Points:</strong> <span className="machine-points">{machine.totalPoints || 0} pts</span></p>
+          <p className="hint">💡 Download files and analyze them locally</p>
+        </div>
+
+        <div className="iframe-container">
+          <iframe
+            src={machine.access?.url || machine.accessUrl}
+            title={machine.name}
+            className="lab-iframe"
+          />
+        </div>
+
+        {renderFlagSubmission()}
+        {renderReportUpload()}
+
+        <div className="actions">
+          <button 
+            onClick={() => window.open(machine.access?.url || machine.accessUrl, '_blank')} 
+            className="btn-open"
+          >
+            🔗 Open in New Tab
+          </button>
+          <button onClick={() => navigate('/my-machines')} className="btn-back">
+            ← Back to My Machines
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading machine...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Error</h2>
+        <p>{error}</p>
+        <button onClick={() => navigate('/my-machines')} className="btn-back">
+          ← Back to My Machines
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="machine-solver">
+      {renderSolveInterface()}
+    </div>
+  );
+};
+
+export default MachineSolver;

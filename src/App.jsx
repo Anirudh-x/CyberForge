@@ -5,6 +5,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Challenges from './pages/Challenges';
 import Leaderboard from './pages/Leaderboard';
+import MachineBuilder from './pages/MachineBuilder';
+import MyMachines from './pages/MyMachines';
+import MachineSolver from './pages/MachineSolver';
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/challenges" element={<Challenges />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/machine-builder" element={<MachineBuilder />} />
+          <Route path="/my-machines" element={<MyMachines />} />
+          <Route path="/solve/:id" element={<MachineSolver />} />
         </Routes>
       </AuthProvider>
     </Router>

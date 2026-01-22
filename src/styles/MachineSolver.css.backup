@@ -1,0 +1,503 @@
+.machine-solver {
+  min-height: 100vh;
+  padding: 20px;
+  background: #0a0a0a;
+}
+
+.solve-interface {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.interface-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.interface-header h2 {
+  color: #00ff00;
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.domain-badge {
+  display: inline-block;
+  background: #00ff00;
+  color: #000;
+  padding: 5px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.lab-info {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.lab-info p {
+  margin: 10px 0;
+  color: #00ff00;
+}
+
+.access-link {
+  color: #00ff00;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.access-link:hover {
+  color: #00cc00;
+}
+
+.status-running {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.hint,
+.terminal-hint {
+  color: #00aa00;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.iframe-container {
+  width: 100%;
+  height: 700px;
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 20px;
+}
+
+.lab-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.terminal-instructions {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.terminal-instructions h3 {
+  color: #00ff00;
+  margin-bottom: 15px;
+}
+
+.code-block {
+  background: #000;
+  border: 1px solid #00ff00;
+  padding: 15px;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
+}
+
+.code-block code {
+  color: #00ff00;
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-open,
+.btn-back {
+  padding: 12px 30px;
+  border: 2px solid #00ff00;
+  background: transparent;
+  color: #00ff00;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.btn-open:hover {
+  background: #00ff00;
+  color: #000;
+}
+
+.btn-back:hover {
+  background: rgba(0, 255, 0, 0.2);
+}
+
+.building-status,
+.error-status,
+.stopped-status {
+  text-align: center;
+  padding: 60px 20px;
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 100px auto;
+}
+
+.building-status h2 {
+  color: #00ff00;
+  margin: 20px 0;
+}
+
+.building-status p {
+  color: #00aa00;
+  margin: 10px 0;
+}
+
+.error-status h2 {
+  color: #ff0000;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 255, 0, 0.1);
+  border-top: 4px solid #00ff00;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 100px 20px;
+  color: #00ff00;
+}
+
+/* Terminal interface styles */
+.code-block {
+  background: #000;
+  border: 1px solid #00ff00;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 15px 0;
+  font-family: 'Courier New', monospace;
+  overflow-x: auto;
+}
+
+.code-block code {
+  color: #0f0;
+  font-size: 1.1em;
+  user-select: all;
+}
+
+.lab-objectives {
+  background: #111;
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 25px;
+  margin: 25px 0;
+}
+
+.lab-objectives h3 {
+  color: #00ff00;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+
+.lab-objectives ul {
+  list-style: none;
+  padding: 0;
+}
+
+.lab-objectives li {
+  color: #0f0;
+  padding: 8px 0;
+  border-bottom: 1px solid #003300;
+}
+
+.lab-objectives li:before {
+  content: "▸ ";
+  color: #00ff00;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.lab-objectives li:last-child {
+  border-bottom: none;
+}
+
+.error-container h2 {
+  color: #ff0000;
+  margin-bottom: 20px;
+}
+
+/* Points Display */
+.points-display {
+  background: rgba(0, 255, 0, 0.1);
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.points-display h3 {
+  color: #00ff00;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.points-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.point-item {
+  background: #000;
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+}
+
+.point-item.total {
+  grid-column: 1 / -1;
+  border: 2px solid #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.point-item .label {
+  display: block;
+  color: #00aa00;
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.point-item .value {
+  display: block;
+  color: #00ff00;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.solved-count {
+  text-align: center;
+  color: #00aa00;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Flag Submission */
+.flag-submission {
+  background: rgba(0, 255, 0, 0.1);
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.flag-submission h3 {
+  color: #00ff00;
+  margin-bottom: 15px;
+}
+
+.flag-submission form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.flag-input {
+  flex: 1;
+  padding: 12px;
+  background: #000;
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+.flag-input:focus {
+  outline: none;
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.flag-input::placeholder {
+  color: #006600;
+}
+
+.btn-submit-flag {
+  padding: 12px 30px;
+  border: 2px solid #00ff00;
+  background: transparent;
+  color: #00ff00;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.btn-submit-flag:hover:not(:disabled) {
+  background: #00ff00;
+  color: #000;
+}
+
+.btn-submit-flag:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.flag-result {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.flag-result.correct {
+  background: rgba(0, 255, 0, 0.2);
+  border: 2px solid #00ff00;
+}
+
+.flag-result.incorrect {
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid #ff0000;
+}
+
+.flag-result .result-message {
+  color: #00ff00;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.flag-result.incorrect .result-message {
+  color: #ff0000;
+}
+
+.flag-result .points-earned {
+  color: #00ff00;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.flag-result .total-points {
+  color: #00aa00;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.flag-result .machine-complete {
+  color: #00ff00;
+  font-size: 14px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Report Upload */
+.report-upload {
+  background: rgba(0, 255, 0, 0.1);
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.report-upload h3 {
+  color: #00ff00;
+  margin-bottom: 10px;
+}
+
+.report-upload form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.file-input {
+  flex: 1;
+  padding: 10px;
+  background: #000;
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.file-input::file-selector-button {
+  padding: 8px 15px;
+  background: transparent;
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+
+.file-input::file-selector-button:hover {
+  background: #00ff00;
+  color: #000;
+}
+
+.btn-upload-report {
+  padding: 12px 30px;
+  border: 2px solid #00ff00;
+  background: transparent;
+  color: #00ff00;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-upload-report:hover:not(:disabled) {
+  background: #00ff00;
+  color: #000;
+}
+
+.btn-upload-report:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.file-info {
+  color: #00aa00;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.machine-points {
+  color: #00ff00;
+  font-weight: bold;
+}

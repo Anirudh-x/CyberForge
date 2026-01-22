@@ -1,0 +1,22 @@
+{
+  "id": "public_bucket",
+  "name": "Public Storage Bucket",
+  "domain": "cloud",
+  "difficulty": "low",
+  "description": "Discover exposed cloud storage with publicly accessible files containing sensitive credentials",
+  "solve_method": "gui",
+  "port": 3000,
+  "terminal_enabled": true,
+  "points": 50,
+  "flag": "FLAG{PUBLIC_BUCKET_EXPOSED}",
+  "hints": [
+    "Check all API endpoints listed on the dashboard",
+    "Look for files containing credentials",
+    "Try downloading credentials.txt or accessing /api/credentials"
+  ],
+  "learning_objectives": [
+    "Understand cloud storage misconfigurations",
+    "Learn about public bucket enumeration",
+    "Discover exposed API endpoints"
+  ]
+}

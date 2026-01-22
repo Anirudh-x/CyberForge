@@ -1,0 +1,22 @@
+{
+  "id": "env_vars",
+  "name": "Exposed Environment Variables",
+  "domain": "cloud",
+  "difficulty": "low",
+  "description": "Discover exposed environment variables containing sensitive credentials through debug endpoints",
+  "solve_method": "gui",
+  "port": 3000,
+  "terminal_enabled": true,
+  "points": 60,
+  "flag": "FLAG{ENV_VARS_EXPOSED}",
+  "hints": [
+    "Check debug endpoints that might be left enabled",
+    "Look for /api/env or /api/debug routes",
+    "Environment variables often contain secrets"
+  ],
+  "learning_objectives": [
+    "Understand risks of exposed environment variables",
+    "Learn about debug endpoint vulnerabilities",
+    "Practice API enumeration"
+  ]
+}

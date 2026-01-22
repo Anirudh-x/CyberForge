@@ -1,0 +1,15 @@
+{
+  "id": "exposed_secrets",
+  "name": "Exposed Cloud Secrets",
+  "domain": "cloud",
+  "difficulty": "low",
+  "description": "Discover exposed secrets in cloud API configuration endpoints",
+  "solve_method": "api",
+  "port": 3000,
+  "flag": "FLAG{CLOUD_SECRETS_EXPOSED}",
+  "hints": [
+    "APIs often have configuration endpoints",
+    "Try /api/config",
+    "Look for sensitive data in JSON responses"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "auth_bypass",
+  "name": "Authentication Bypass",
+  "domain": "web",
+  "difficulty": "low",
+  "description": "Bypass authentication by manipulating cookies",
+  "solve_method": "gui",
+  "port": 3000,
+  "flag": "FLAG{AUTH_BYPASS_SUCCESS}",
+  "hints": [
+    "Authentication is done via cookies",
+    "Cookies are stored client-side",
+    "Use browser DevTools to manipulate cookies"
+  ]
+}

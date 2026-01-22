@@ -3,77 +3,106 @@ import LeaderboardCard from '../components/LeaderboardCard';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
-const fallbackData = [
-  { rank: 1, username: "@MrRobot", solved: 9, score: 800, time: "00:45:30" },
-  { rank: 2, username: "@Sherlock22B", solved: 5, score: 500, time: "01:05:30" },
-  { rank: 3, username: "@SheldorTheConquerer", solved: 2, score: 200, time: "00:10:30" },
-];
-
 export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [category, setCategory] = useState('overall');
+
+  const categories = [
+    { id: 'overall', label: '🏆 Overall', endpoint: '/api/leaderboard/overall' },
+    { id: 'web', label: '🌐 Web Security', endpoint: '/api/leaderboard/web' },
+    { id: 'red_team', label: '🔴 Red Team', endpoint: '/api/leaderboard/red-team' },
+    { id: 'blue_team', label: '🔵 Blue Team', endpoint: '/api/leaderboard/blue-team' },
+    { id: 'cloud', label: '☁️ Cloud Security', endpoint: '/api/leaderboard/cloud' },
+    { id: 'forensics', label: '🔍 Forensics', endpoint: '/api/leaderboard/forensics' }
+  ];
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const response = await fetch('/api/leaderboard', {
-          credentials: 'include',
-        });
-        const data = await response.json();
-        
-        if (data.success && data.leaderboard) {
-          const formattedData = data.leaderboard.map((entry) => ({
-            ...entry,
-            time: formatTime(entry.lastSolveTime)
-          }));
-          setLeaderboardData(formattedData);
-        } else {
-          setError("Failed to load leaderboard data");
-          setLeaderboardData(fallbackData);
-        }
-      } catch (error) {
-        console.error("Error fetching leaderboard:", error);
-        setError("Failed to load leaderboard data");
-        setLeaderboardData(fallbackData);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     fetchLeaderboard();
-  }, []);
+  }, [category]);
 
-  const formatTime = (isoString) => {
-    if (!isoString) return "N/A";
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const fetchLeaderboard = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const selectedCategory = categories.find(c => c.id === category);
+      const response = await fetch(selectedCategory.endpoint, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      
+      if (data.success && data.leaderboard) {
+        setLeaderboardData(data.leaderboard);
+      } else {
+        setError("Failed to load leaderboard data");
+        setLeaderboardData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      setError("Failed to load leaderboard data");
+      setLeaderboardData([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
       <Navbar />
       <div className="min-h-screen bg-black text-green-400 flex flex-col items-center py-10">
-        <h1 className="text-4xl font-bold text-green-300">🏆 Leaderboard 🏆</h1>
+        <h1 className="text-4xl font-bold text-green-300 mb-2">🏆 Leaderboard 🏆</h1>
         <p className="text-lg text-green-500 mb-6">Where hackers compete for glory!</p>
         
+        {/* Category Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategory(cat.id)}
+              className={`px-4 py-2 border-2 rounded font-mono font-bold transition-all ${
+                category === cat.id
+                  ? 'bg-green-400 text-black border-green-400'
+                  : 'bg-transparent text-green-400 border-green-400 hover:bg-green-400 hover:bg-opacity-20'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+        
         {isLoading ? (
-          <p className="text-green-400 text-xl">Loading leaderboard data...</p>
+          <div className="text-center">
+            <div className="inline-block w-12 h-12 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-green-400 text-xl">Loading leaderboard...</p>
+          </div>
         ) : error ? (
-          <p className="text-red-400 text-xl">{error}</p>
+          <div className="text-center">
+            <p className="text-red-400 text-xl mb-4">{error}</p>
+            <button 
+              onClick={fetchLeaderboard}
+              className="px-6 py-2 border-2 border-green-400 text-green-400 bg-transparent hover:bg-green-400 hover:text-black rounded font-mono font-bold"
+            >
+              Retry
+            </button>
+          </div>
         ) : (
-          <div className="w-3/4 space-y-4 mb-10">
+          <div className="w-full max-w-4xl space-y-4 mb-10 px-4">
             {leaderboardData.length === 0 ? (
-              <p className="text-green-400 text-center">No players on the leaderboard yet. Be the first!</p>
+              <div className="text-center p-10 border-2 border-green-400 rounded-lg bg-green-400 bg-opacity-5">
+                <p className="text-green-400 text-xl">No players on this leaderboard yet.</p>
+                <p className="text-green-500 mt-2">Be the first to solve challenges in this category!</p>
+              </div>
             ) : (
               leaderboardData.map((player) => (
                 <LeaderboardCard 
                   key={player.rank}
                   rank={player.rank}
-                  username={player.username}
-                  solved={player.solved}
-                  score={player.score}
-                  time={player.time || 'N/A'}
+                  username={player.team_name}
+                  solved={player.solvedCount}
+                  score={player.points}
+                  machines={player.machinesSolved}
                 />
               ))
             )}

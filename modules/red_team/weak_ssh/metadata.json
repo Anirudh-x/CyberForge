@@ -1,0 +1,19 @@
+{
+  "id": "weak_ssh",
+  "name": "Weak SSH Credentials",
+  "domain": "red_team",
+  "difficulty": "low",
+  "description": "Exploit weak SSH credentials to gain access and find the flag",
+  "solve_method": "terminal",
+  "port": 22,
+  "flag": "FLAG{WEAK_SSH_CREDS}",
+  "credentials": {
+    "username": "ctfuser",
+    "password": "password123"
+  },
+  "hints": [
+    "Try common passwords",
+    "Username: ctfuser",
+    "Once inside, look for the flag in /root/"
+  ]
+}

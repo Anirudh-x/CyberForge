@@ -1,0 +1,19 @@
+{
+  "id": "privilege_escalation",
+  "name": "Privilege Escalation",
+  "domain": "red_team",
+  "difficulty": "medium",
+  "description": "Escalate privileges from low-privileged user to root using SUID binary",
+  "solve_method": "terminal",
+  "port": 22,
+  "flag": "FLAG{PRIVILEGE_ESCALATION}",
+  "credentials": {
+    "username": "lowpriv",
+    "password": "lowpriv"
+  },
+  "hints": [
+    "Look for SUID binaries: find / -perm -4000 2>/dev/null",
+    "SUID binaries run with owner's privileges",
+    "Check /tmp for interesting files"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "disk_image",
+  "name": "Disk Image Investigation",
+  "domain": "forensics",
+  "difficulty": "medium",
+  "description": "Investigate a disk image from a compromised system to find hidden files and sensitive data",
+  "solve_method": "file",
+  "port": 3000,
+  "terminal_enabled": true,
+  "points": 85,
+  "flag": "FLAG{DISK_FORENSICS_COMPLETE}",
+  "hints": [
+    "Look for hidden files starting with a dot (.)",
+    "Check the Documents folder for sensitive files",
+    "Download and examine passwords.txt",
+    "Try: curl http://localhost:PORT/api/file?path=passwords.txt"
+  ],
+  "learning_objectives": [
+    "Understand disk forensics methodology",
+    "Learn to identify hidden files",
+    "Practice file system analysis"
+  ]
+}

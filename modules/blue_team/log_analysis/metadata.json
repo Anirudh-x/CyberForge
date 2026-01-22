@@ -1,0 +1,15 @@
+{
+  "id": "log_analysis",
+  "name": "Log Analysis Challenge",
+  "domain": "blue_team",
+  "difficulty": "medium",
+  "description": "Analyze system logs to identify security incidents and find the flag",
+  "solve_method": "file",
+  "port": 3000,
+  "flag": "FLAG{LOG_ANALYSIS_COMPLETE}",
+  "hints": [
+    "Download and analyze the system logs",
+    "Look for patterns: failed logins, malware, suspicious connections",
+    "The flag is hidden in the logs - use grep or search"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Cross-Site Request Forgery (CSRF)",
+  "difficulty": "medium",
+  "points": 70,
+  "flag": "FLAG{CSRF_T0K3N_BYP4SS}",
+  "route": "/transfer",
+  "solve_method": "gui",
+  "port": 3000,
+  "solution": {
+    "explanation": "This lab has a CSRF vulnerability in the fund transfer functionality. The application doesn't validate CSRF tokens, allowing attackers to forge requests from authenticated users.",
+    "steps": [
+      "Navigate to http://localhost:PORT/transfer",
+      "Log in with credentials: user/password",
+      "Observe the transfer form that lacks CSRF protection",
+      "Create an HTML page with a hidden form that auto-submits",
+      "Use the payload below to craft the malicious request",
+      "Open the malicious page in the same browser session",
+      "The flag will appear after successful transfer"
+    ],
+    "payload": "<form action='http://localhost:PORT/transfer' method='POST'><input name='amount' value='1000'><input name='to' value='attacker'></form><script>document.forms[0].submit()</script>",
+    "hints": [
+      "CSRF attacks work when the user is already authenticated",
+      "Look for forms that don't have CSRF tokens",
+      "The attack can be hidden in an iframe or image tag"
+    ]
+  }
+}

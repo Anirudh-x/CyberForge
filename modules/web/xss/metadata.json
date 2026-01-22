@@ -1,0 +1,15 @@
+{
+  "id": "xss",
+  "name": "Cross-Site Scripting (XSS)",
+  "domain": "web",
+  "difficulty": "low",
+  "description": "Execute JavaScript code through reflected XSS vulnerability",
+  "solve_method": "gui",
+  "port": 3000,
+  "flag": "FLAG{XSS_EXECUTED}",
+  "hints": [
+    "User input is directly rendered in HTML",
+    "Try injecting script tags",
+    "Check the page source after injection"
+  ]
+}

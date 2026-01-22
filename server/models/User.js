@@ -23,6 +23,45 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // New points system
+  totalPoints: {
+    type: Number,
+    default: 0
+  },
+  redTeamPoints: {
+    type: Number,
+    default: 0
+  },
+  blueTeamPoints: {
+    type: Number,
+    default: 0
+  },
+  webPoints: {
+    type: Number,
+    default: 0
+  },
+  cloudPoints: {
+    type: Number,
+    default: 0
+  },
+  forensicsPoints: {
+    type: Number,
+    default: 0
+  },
+  solvedVulnerabilities: [{
+    machineId: { type: mongoose.Schema.Types.ObjectId, ref: 'Machine' },
+    vulnerabilityInstanceId: String,  // Unique instance ID
+    moduleId: String,                 // Type of vulnerability
+    domain: String,
+    points: Number,
+    flag: String,
+    solvedAt: { type: Date, default: Date.now }
+  }],
+  solvedMachines: [{
+    machineId: { type: mongoose.Schema.Types.ObjectId, ref: 'Machine' },
+    completedAt: { type: Date, default: Date.now },
+    totalPoints: Number
+  }],
   solvedChallenges: [{
     challengeId: String,
     solvedAt: {

@@ -5,8 +5,13 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectToDatabase } from './config/database.js';
+import { authMiddleware } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
 import challengeRoutes from './routes/challenges.js';
+import machineRoutes from './routes/machines.js';
+import flagRoutes from './routes/flags.js';
+import leaderboardRoutes from './routes/leaderboard.js';
+import reportRoutes from './routes/reports.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -33,6 +38,10 @@ connectToDatabase();
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', challengeRoutes);
+app.use('/api/machines', machineRoutes);
+app.use('/api/flags', authMiddleware, flagRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/reports', authMiddleware, reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

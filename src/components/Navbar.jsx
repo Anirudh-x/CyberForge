@@ -38,6 +38,12 @@ export default function Navbar() {
                 <Link to="/challenges" className="hover:text-green-300 transition duration-200">
                   [ CHALLENGES ]
                 </Link>
+                <Link to="/machine-builder" className="hover:text-green-300 transition duration-200">
+                  [ BUILD MACHINE ]
+                </Link>
+                <Link to="/my-machines" className="hover:text-green-300 transition duration-200">
+                  [ MY MACHINES ]
+                </Link>
                 <div className="text-green-300 font-bold ml-2">TEAM: {user?.teamName}</div>
                 <button
                   onClick={handleLogout}
@@ -79,6 +85,12 @@ export default function Navbar() {
             <>
               <Link to="/challenges" className="hover:text-green-300 transition duration-200" onClick={() => setIsOpen(false)}>
                 [ CHALLENGES ]
+              </Link>
+              <Link to="/machine-builder" className="hover:text-green-300 transition duration-200" onClick={() => setIsOpen(false)}>
+                [ BUILD MACHINE ]
+              </Link>
+              <Link to="/my-machines" className="hover:text-green-300 transition duration-200" onClick={() => setIsOpen(false)}>
+                [ MY MACHINES ]
               </Link>
               <div className="text-green-300 font-bold">TEAM: {user?.teamName}</div>
               <button

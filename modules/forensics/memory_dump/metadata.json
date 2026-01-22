@@ -1,0 +1,23 @@
+{
+  "id": "memory_dump",
+  "name": "Memory Dump Analysis",
+  "domain": "forensics",
+  "difficulty": "medium",
+  "description": "Analyze a memory dump from a compromised system to find evidence and hidden flags",
+  "solve_method": "file",
+  "port": 3000,
+  "terminal_enabled": true,
+  "points": 80,
+  "flag": "FLAG{MEMORY_FORENSICS_MASTER}",
+  "hints": [
+    "Download the memory dump or extracted strings file",
+    "Look for suspicious process names",
+    "Search for the FLAG string in the extracted data",
+    "Try: curl http://localhost:PORT/api/strings | grep FLAG"
+  ],
+  "learning_objectives": [
+    "Understand memory forensics basics",
+    "Learn to extract strings from memory dumps",
+    "Practice identifying malicious processes"
+  ]
+}

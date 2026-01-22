@@ -1,0 +1,23 @@
+{
+  "id": "hidden_files",
+  "name": "Hidden Files Investigation",
+  "domain": "forensics",
+  "difficulty": "low",
+  "description": "Perform digital forensics to find hidden data in disk evidence",
+  "solve_method": "file",
+  "port": 3000,
+  "terminal_enabled": true,
+  "points": 70,
+  "flag": "FLAG{FORENSICS_HIDDEN_DATA_FOUND}",
+  "hints": [
+    "Download and extract the evidence.zip file",
+    "Look for hidden files (starting with .)",
+    "Use ls -la or similar commands to see hidden files"
+  ],
+  "learning_objectives": [
+    "Understand hidden file detection",
+    "Learn basic forensics workflow",
+    "Practice archive analysis"
+  ]
+}
+

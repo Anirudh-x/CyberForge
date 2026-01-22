@@ -1,0 +1,32 @@
+{
+  "name": "Cross-Site Scripting (XSS)",
+  "difficulty": "medium",
+  "points": 65,
+  "flag": "FLAG{XSS_VULN3RABILITY_D3T3CT3D}",
+  "description": "Exploit XSS vulnerability to execute JavaScript in the browser",
+  "route": "/comment",
+  "solve_method": "gui",
+  "port": 3000,
+  "credentials": {
+    "username": "user",
+    "password": "password"
+  },
+  "solution": {
+    "explanation": "This lab contains a reflected XSS vulnerability in the comment section. User input is displayed without proper sanitization, allowing JavaScript code execution.",
+    "steps": [
+      "Navigate to http://localhost:PORT/comment",
+      "Find the comment input field",
+      "Enter a basic XSS payload: <script>alert('XSS')</script>",
+      "If filtered, try alternative payloads like <img src=x onerror=alert(1)>",
+      "Submit the comment and observe the JavaScript execution",
+      "The flag will be revealed in the page source or alert dialog"
+    ],
+    "payload": "<img src=x onerror=alert(document.cookie)>",
+    "hints": [
+      "HTML tags can execute JavaScript using event handlers",
+      "Try different HTML elements if <script> is blocked",
+      "Look for reflected input that isn't sanitized"
+    ]
+  }
+}
+

@@ -1,0 +1,22 @@
+{
+  "id": "iam_policy",
+  "name": "Misconfigured IAM Policy",
+  "domain": "cloud",
+  "difficulty": "medium",
+  "description": "Exploit overly permissive IAM policies to access admin-only resources",
+  "solve_method": "gui",
+  "port": 3000,
+  "terminal_enabled": true,
+  "points": 75,
+  "flag": "FLAG{IAM_POLICY_MISCONFIGURED}",
+  "hints": [
+    "Check which users have admin_policy attached",
+    "Look for developers or interns with excessive permissions",
+    "Use their access keys to query /api/admin/secrets"
+  ],
+  "learning_objectives": [
+    "Understand IAM policy misconfigurations",
+    "Learn about privilege escalation via overly permissive roles",
+    "Practice API enumeration with access keys"
+  ]
+}
