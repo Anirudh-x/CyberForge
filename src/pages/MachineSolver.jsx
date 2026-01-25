@@ -316,27 +316,43 @@ const MachineSolver = () => {
     e.preventDefault();
     const flagValue = flagInputs[vulnerabilityInstanceId];
     
-    if (!flagValue?.trim() || !machine) return;
+    console.log('🚀 Submitting flag:');
+    console.log('   Machine ID:', machine?._id);
+    console.log('   Vulnerability Instance ID:', vulnerabilityInstanceId);
+    console.log('   Flag:', flagValue?.trim());
+    console.log('   Machine vulnerabilities:', machine?.vulnerabilities);
+    
+    if (!flagValue?.trim() || !machine) {
+      console.log('❌ Missing flag value or machine data');
+      return;
+    }
 
     setSubmittingFlags(prev => ({ ...prev, [vulnerabilityInstanceId]: true }));
     setFlagResults(prev => ({ ...prev, [vulnerabilityInstanceId]: null }));
 
     try {
+      const requestBody = {
+        machineId: machine._id,
+        vulnerabilityInstanceId: vulnerabilityInstanceId,
+        flag: flagValue.trim()
+      };
+      console.log('📤 Request body:', requestBody);
+
       const response = await fetch('/api/flags/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          machineId: machine._id,
-          vulnerabilityInstanceId: vulnerabilityInstanceId,
-          flag: flagValue.trim()
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await response.json();
+      console.log('📥 Response status:', response.status);
+      console.log('📥 Response data:', data);
+      
       setFlagResults(prev => ({ ...prev, [vulnerabilityInstanceId]: data }));
 
       if (data.correct) {
+        console.log('✅ Flag accepted! Points earned:', data.points);
         // Clear the input for this vulnerability
         setFlagInputs(prev => ({ ...prev, [vulnerabilityInstanceId]: '' }));
         fetchUserStats();
@@ -347,8 +363,11 @@ const MachineSolver = () => {
         setTimeout(() => {
           checkAndNavigateToNextMachine();
         }, 100);
+      } else {
+        console.log('❌ Flag rejected:', data.message || data.error);
       }
     } catch (err) {
+      console.error('❌ Error submitting flag:', err);
       setFlagResults(prev => ({ 
         ...prev, 
         [vulnerabilityInstanceId]: {

