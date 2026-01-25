@@ -2,89 +2,419 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Chatbot from '../components/Chatbot';
 import { useAuth } from '../hooks/useAuth';
+import { Bot, X, ShieldAlert, Cpu, Network, Zap, Activity, Globe, Layers, Monitor, ShieldCheck, Trophy, Terminal as TerminalIcon, Cpu as Brain, Command } from 'lucide-react'; 
 import '../styles/blink.css';
 
 export default function Home() {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [liveLogs, setLiveLogs] = useState([]);
+  const [isForging, setIsForging] = useState(false);
+  const [selectedSector, setSelectedSector] = useState('WEB_APPS');
 
-  const [fakeLogs, setFakeLogs] = useState([
-    "[CYBERFORGE] Booting up...",
-    "[AUTH] Establishing secure connection...",
-    "[LOADING] Fetching challenges...",
-    "[SECURITY] System integrity check passed.",
-  ]);
+  // --- SECTOR CONTENT DATA ---
+  const sectorData = {
+    WEB_APPS: {
+      desc: "OWASP Top 10 coverage, API Fuzzing, and Secure Subnet SSRF bypass modules.",
+      vulns: ['SQLi', 'XSS', 'RCE', 'LFI', 'IDOR', 'SSRF'],
+      specs: { os: 'HARDENED_V4', ram: '16GB_ECC', net: '10.10.x.x', kern: '5.15.0-x86' }
+    },
+    RED_TEAM: {
+      desc: "Active Directory exploitation, lateral movement, and advanced persistence mechanics.",
+      vulns: ['KERBEROAST', 'PTH', 'SMB_RELAY', 'DC_SYNC', 'GOLD_TKT', 'LLMNR'],
+      specs: { os: 'KALI_ROLLING', ram: '32GB_NVME', net: '192.168.1.x', kern: '6.1.0-amd64' }
+    },
+    BLUE_TEAM: {
+      desc: "Threat hunting, log analysis, and real-time incident response protocols.",
+      vulns: ['IDS_EVASION', 'LOG_DEL', 'TIMESTOMP', 'ROOTKIT', 'MEM_INJECT', 'BEACON'],
+      specs: { os: 'SIEM_OS_V2', ram: '64GB_DDR5', net: 'DMZ_INTERNAL', kern: 'HARDENED_LTS' }
+    },
+    CLOUD_SEC: {
+      desc: "S3 bucket exfiltration, IAM misconfigurations, and K8s breakout simulations.",
+      vulns: ['S3_LEAK', 'IAM_ESC', 'METADATA_V1', 'K8S_ESCAPE', 'LAMBDA_INJ', 'EC2_TAKEOVER'],
+      specs: { os: 'AWS_AL2023', ram: 'SERVERLESS', net: 'VPC_PEERED', kern: 'KERNEL_6.x' }
+    }
+  };
+
+  // --- LEADERBOARD MOCK DATA ---
+  const leaderboard = [
+    { rank: "01", team: "Null_Pointers", points: "45,200", flag: "US" },
+    { rank: "02", team: "Kernel_Panic", points: "42,850", flag: "IN" },
+    { rank: "03", team: "Root_Shadow", points: "39,120", flag: "DE" },
+    { rank: "04", team: "Byte_Me", points: "35,400", flag: "UK" },
+    { rank: "05", team: "Ghost_Shell", points: "31,000", flag: "JP" },
+  ];
+
+  // --- HYPER-SPEED HERO LOGS (600ms) ---
+  const heroPool = ["SYS_CALL", "HEX_DUMP", "NET_FLOW", "ERR_BYPASS", "KERN_LOG", "UDP_FWD", "SYN_ACK"];
+  const [fakeLogs, setFakeLogs] = useState(["[CYBERFORGE] Booting...", "[AUTH] Tunnel established...", "[READY] Awaiting operator..."]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setFakeLogs((prevLogs) => [
-        ...prevLogs.slice(-3),
-        `[LOG] New threat detected...`,
-      ]);
-    }, 2000);
-
+      const type = heroPool[Math.floor(Math.random() * heroPool.length)];
+      const hex = Math.random().toString(16).slice(2, 8).toUpperCase();
+      setFakeLogs(prev => [...prev.slice(-4), `[${type}] 0x${hex} -> ADDR_VAR_SYNC..OK`]);
+    }, 600);
     return () => clearInterval(interval);
   }, []);
 
+  // --- MODULE DATA ---
+  const modules = [
+    { 
+      id: 'web', tabName: 'web_exploit.sh', title: 'WEB_PWNER_V2', 
+      content: 'Bypassing WAF... Injected SQL string into /user/auth. Extracting hashes.',
+      vectors: ['> XSS Reflected', '> SQLi Blind', '> JWT Bypass'],
+      pool: ["SCAN_PORT_80", "POST_/login_200", "SQL_INJECT_SUCCESS", "TABLE_DUMP_INIT"]
+    },
+    { 
+      id: 'pwn', tabName: 'pwn_registry.py', title: 'BUFFER_OVERFLOW', 
+      content: 'Finding offset... Overwriting EIP with JMP ESP. Loading shellcode.', 
+      vectors: ['> NOP Sled', '> Ret2Libc', '> Canary Leak'],
+      pool: ["FUZZ_512B", "ADDR_0xDEADBEEF", "SHELL_UID_0", "STACK_SMASH_OK"]
+    },
+    { 
+      id: 'crypto', tabName: 'crypto_vault.rs', title: 'RSA_CRACKER', 
+      content: 'Collecting public keys... Factoring modulus N. Rebuilding private D.', 
+      vectors: ['> Fermat Factoring', '> Coppersmith', '> Bleichenbacher'],
+      pool: ["FACT_PRIME_N", "PHI_CALC_DONE", "KEY_FOUND_D", "DECRYPT_RSA_2k"]
+    }
+  ];
+
+  // --- HYPER-SPEED MODULE LOGS (400ms) ---
+  useEffect(() => {
+    setLiveLogs([`> INIT_${modules[activeIdx].id.toUpperCase()}`]);
+    const interval = setInterval(() => {
+      const currentPool = modules[activeIdx].pool;
+      const nextLog = currentPool[Math.floor(Math.random() * currentPool.length)];
+      setLiveLogs(prev => [...prev.slice(-5), `[${Math.floor(Math.random() * 999)}] ${nextLog}`]);
+    }, 400);
+    return () => clearInterval(interval);
+  }, [activeIdx]);
+
+  const handleForge = () => {
+    setIsForging(true);
+    setTimeout(() => setIsForging(false), 3000); 
+  };
+
   return (
-    <div>
+    <div className="relative bg-[#050505] min-h-screen selection:bg-green-500 selection:text-black overflow-x-hidden hacker-font">
+      <div className="fixed inset-0 hacker-grid opacity-30 pointer-events-none" />
+      <div className="fixed top-[-20%] left-[-10%] w-[800px] h-[800px] bg-green-900/10 rounded-full blur-[150px] pointer-events-none animate-pulse" />
+      
       <Navbar />
-      <div className="bg-black text-green-400 min-h-screen py-[-10px]">
-        <div className="container mx-auto px-6 py-12">
-          <div className="flex flex-col lg:flex-row items-center">
-            {/* Left Column - Text Content */}
-            <div className="lg:w-1/2">
-              <h1 className="text-5xl font-bold font-mono leading-tight">
-                CYBERFORGE<span className="text-green-500 blinking">_</span>
-              </h1>
-              <p className="text-lg mt-4 font-mono text-green-300">
-                Welcome hackers! Prove to the world that a computer genius with a laptop is not a nerd in a messy room but a fun-loving work of brilliance!  
-                Join our CTF and expand your knowledge in computer forensics.
-              </p>
 
-              {/* Conditional Login & Register Buttons */}
-              <div className="mt-6 space-x-4">
-                {!isAuthenticated && !isLoading ? (
-                  <>
-                    <Link to="/login">
-                      <button className="bg-green-600 text-black px-6 py-2 font-mono text-lg shadow-md hover:bg-green-500 transition">
-                        Login
-                      </button>
-                    </Link>
-                    <Link to="/register">
-                      <button className="bg-red-600 text-black px-6 py-2 font-mono text-lg shadow-md hover:bg-red-500 transition">
-                        Register
-                      </button>
-                    </Link>
-                  </>
-                ) : isAuthenticated ? (
-                  <Link to="/challenges">
-                    <button className="bg-green-600 text-black px-6 py-2 font-mono text-lg shadow-md hover:bg-green-500 transition">
-                      Start Hacking
-                    </button>
-                  </Link>
-                ) : null}
-              </div>
+      <main className="relative z-10">
+        {/* --- HERO SECTION --- */}
+        <div className="container mx-auto px-6 py-24 flex flex-col lg:flex-row items-center gap-16">
+          <div className="lg:w-1/2 space-y-10 text-left">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 glass-morphism rounded-full border border-green-500/30">
+              <div className="w-2 h-2 bg-[#39FF14] rounded-full animate-ping shadow-[0_0_8px_#39FF14]" />
+              <span className="text-[10px] tracking-[0.3em] text-[#39FF14] uppercase font-bold">System Status: Optimal</span>
             </div>
+            <h1 className="text-8xl font-black font-mono leading-[0.85] tracking-tighter text-white uppercase italic">
+              CYBER<span className="text-[#39FF14] typewriter-forge px-2 drop-shadow-[0_0_15px_rgba(57,255,20,0.6)]">FORGE</span>
+            </h1>
+            <p className="text-xl text-zinc-400 max-w-lg leading-relaxed border-l-4 border-[#39FF14]/40 pl-8 text-left">
+              Digital frontline engaged. Welcome back, <span className="text-[#00F0FF] font-bold drop-shadow-[0_0_10px_#00F0FF] uppercase italic">Operator_{user?.teamName || "Guest"}</span>.
+            </p>
+            <div className="flex flex-wrap gap-6 pt-4">
+              {!isAuthenticated ? (
+                <>
+                  <Link to="/login" className="px-10 py-4 bg-[#39FF14] hover:bg-green-400 text-black font-black text-xl transition-all shadow-[6px_6px_0px_#fff] active:scale-95">LOGIN</Link>
+                  <Link to="/register" className="px-10 py-4 glass-morphism text-[#39FF14] border border-[#39FF14] font-bold text-xl hover:bg-green-500/10 transition-all">REGISTER</Link>
+                </>
+              ) : (
+                <Link to="/challenges" className="px-12 py-5 bg-[#39FF14] hover:bg-green-400 text-black font-black text-2xl transition-all shadow-[0_0_30px_rgba(57,255,20,0.4)]">ACCESS_CHALLENGES.exe</Link>
+              )}
+            </div>
+          </div>
 
-            {/* Right Column - Terminal */}
-            <div className="lg:w-1/2 mt-12 lg:mt-0 px-6">
-              <div className="bg-black border border-green-600 text-green-300 p-4 font-mono h-60 overflow-hidden">
-                <div className="text-green-500">┌──(root@cyberforge)-[~]</div>
-                <div className="text-green-500">└─$ ./start_ctf</div>
-                {fakeLogs.map((log, index) => (
-                  <p key={index} className="text-green-400">{log}</p>
-                ))}
-                {isAuthenticated && (
-                  <p className="text-green-400">[AUTH] Welcome back, {user?.teamName}!</p>
-                )}
-                <div className="blinking text-green-500">█</div>
+          <div className="lg:w-1/2 w-full group">
+            <div className="glass-morphism p-1 rounded-2xl border-[#39FF14]/50 shadow-[0_0_30px_rgba(57,255,20,0.2)]">
+              <div className="bg-zinc-950/80 rounded-[14px] p-8 h-[350px] relative overflow-hidden">
+                <div className="terminal-scanline-fast" />
+                <div className="flex justify-between items-center mb-6 opacity-60">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500/40" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/40" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/40" />
+                  </div>
+                  <span className="text-[10px] tracking-widest text-[#39FF14] font-bold underline uppercase">TTY_01_ROOT</span>
+                </div>
+                <div className="space-y-2 text-left">
+                  <div className="text-[#39FF14]/50 flex gap-2 text-xs">
+                    <span>┌──(</span><span className="text-[#00F0FF] font-bold drop-shadow-[0_0_5px_#00F0FF]">{user?.teamName || "root"}@cyberforge</span><span>)-[~]</span>
+                  </div>
+                  {fakeLogs.map((log, i) => (
+                    <p key={i} className={`text-sm leading-tight tracking-wide bright-neon-text transition-all duration-75`}>{log}</p>
+                  ))}
+                  <div className="blinking text-[#39FF14] mt-2 text-xl drop-shadow-[0_0_10px_#39FF14]">█</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* --- SECTION 01: SYSTEM CORE --- */}
+        <div className="container mx-auto px-6 py-32 border-t border-[#39FF14]/20">
+          <div className="flex items-center gap-8 mb-16">
+            <h2 className="text-5xl font-mono text-white tracking-tighter uppercase italic">
+              <span className="text-[#39FF14] drop-shadow-[0_0_10px_#39FF14]">01.</span> SYSTEM_CORE
+            </h2>
+            <div className="h-px flex-grow bg-gradient-to-r from-[#39FF14]/40 to-transparent" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <StatCard icon={<ShieldAlert className="text-red-500 shadow-red-500"/>} label="THREAT_LEVEL" value="ELEVATED" progress="70%" />
+            <StatCard icon={<Activity className="text-blue-500 shadow-blue-500"/>} label="TRAFFIC_LOAD" value="1.2 GB/S" progress="45%" />
+            <StatCard icon={<Zap className="text-[#39FF14] shadow-[#39FF14]"/>} label="NODE_POWER" value="OPTIMAL" progress="100%" />
+          </div>
+        </div>
+
+        {/* --- SECTION 02: TRAINING MODULES --- */}
+        <div className="container mx-auto px-6 py-32 border-t border-[#39FF14]/20">
+          <div className="flex items-center gap-8 mb-16">
+            <h2 className="text-5xl font-mono text-white tracking-tighter uppercase italic">
+              <span className="text-[#39FF14] drop-shadow-[0_0_10px_#39FF14]">02.</span> TRAINING_MODULES
+            </h2>
+            <div className="h-px flex-grow bg-gradient-to-r from-[#39FF14]/40 to-transparent" />
+          </div>
+          <div className="glass-morphism rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(57,255,20,0.15)] border border-[#39FF14]/20">
+            <div className="bg-zinc-900/60 px-8 py-6 flex items-center justify-between border-b border-[#39FF14]/10">
+              <div className="flex gap-6">
+                {modules.map((m, idx) => (
+                  <button key={m.id} onClick={() => setActiveIdx(idx)} className={`px-4 py-2 text-sm tracking-widest transition-all relative ${activeIdx === idx ? 'text-[#39FF14] font-bold drop-shadow-[0_0_8px_#39FF14]' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                    {m.tabName.toUpperCase()}
+                    {activeIdx === idx && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#39FF14] shadow-[0_0_15px_#39FF14]" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="p-12 relative bg-black/40 grid md:grid-cols-2 gap-20 relative z-10 text-left">
+                <div className="space-y-10">
+                  <h3 className="text-4xl font-black text-white italic tracking-tighter decoration-[#39FF14] underline underline-offset-8">{modules[activeIdx].title}</h3>
+                  <div className="space-y-4">
+                    <span className="text-[10px] text-[#39FF14] font-bold uppercase tracking-[0.5em] animate-pulse">Live_Telemetry_Stream_Turbo</span>
+                    <div className="glass-morphism bg-black/60 p-6 border border-[#39FF14]/30 rounded-2xl h-56 overflow-hidden">
+                      {liveLogs.map((log, i) => <p key={i} className="text-sm mb-1 bright-neon-text font-mono">{log}</p>)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col justify-between">
+                  <div className="space-y-6">
+                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Attack_Vectors</p>
+                    {modules[activeIdx].vectors.map((v, i) => (
+                      <div key={i} className="flex items-center gap-5 text-[#39FF14] hover:translate-x-2 transition-transform cursor-pointer group">
+                        <div className="w-1.5 h-1.5 bg-[#39FF14] rounded-full shadow-[0_0_10px_#39FF14]" />
+                        <span className="text-md font-bold bright-neon-text">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => alert(`EXPLOIT_DEPLOYED::${modules[activeIdx].id}`)} className="mt-16 w-full py-6 glass-morphism border-2 border-[#39FF14] text-[#39FF14] font-black uppercase tracking-[0.8em] transition-all hover:bg-[#39FF14] hover:text-black shadow-[0_0_40px_rgba(57,255,20,0.5)] active:scale-95">RUN_INITIALIZER</button>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SECTION 03: MACHINE_ARCHITECT --- */}
+        <div className="container mx-auto px-6 py-32 border-t border-[#39FF14]/20">
+          <div className="flex items-center gap-8 mb-16">
+            <h2 className="text-5xl font-mono text-white tracking-tighter uppercase italic">
+              <span className="text-[#39FF14] drop-shadow-[0_0_10px_#39FF14]">03.</span> MACHINE_ARCHITECT
+            </h2>
+            <div className="h-px flex-grow bg-gradient-to-r from-[#39FF14]/40 to-transparent" />
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
+            <div className="lg:w-1/3 space-y-8 sticky top-24 text-left">
+              <p className="text-zinc-400 font-mono text-lg border-l-4 border-[#00F0FF] pl-6 leading-relaxed italic">
+                Initialize custom target instances. Select attack surfaces and exploit vectors for <span className="text-[#00F0FF] font-bold uppercase">Operator_{user?.teamName || "Guest"}</span> to test exfiltration.
+              </p>
+              <div className="space-y-4">
+                <div className="flex justify-between text-[10px] font-mono text-[#39FF14]">
+                  <span>FORGE_SYNC_PROGRESS</span>
+                  <span>{isForging ? '91%' : '0%'}</span>
+                </div>
+                <div className="w-full h-1 bg-zinc-900 overflow-hidden text-left">
+                  <div className={`h-full bg-[#39FF14] transition-all duration-1000 ${isForging ? 'w-[91%]' : 'w-0'}`} style={{ boxShadow: '0 0 10px #39FF14' }} />
+                </div>
+              </div>
+              <button onClick={handleForge} disabled={isForging} className={`w-full py-6 font-black text-xl transition-all uppercase font-mono border-2 border-[#39FF14] ${isForging ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-[#39FF14] text-black shadow-[0_0_40px_rgba(57,255,20,0.4)] hover:scale-105 active:scale-95'}`}>
+                {isForging ? 'FORGING_INSTANCE...' : 'INITIATE_FORGE.exe'}
+              </button>
+            </div>
+
+            <div className="lg:w-2/3 relative h-[700px] w-full mt-12 lg:mt-0">
+              <div className="absolute top-0 left-[5%] w-[85%] glass-morphism p-10 rounded-2xl border border-[#00F0FF]/40 z-30 shadow-[0_0_60px_rgba(0,0,0,0.9)] transition-transform hover:translate-y-[-5px]">
+                <div className="flex justify-between items-center border-b border-white/10 pb-4 mb-8">
+                  <div className="flex items-center gap-3">
+                    <Monitor size={22} className="text-[#00F0FF] animate-pulse" />
+                    <span className="text-xs text-[#00F0FF] uppercase tracking-[0.4em] font-bold font-mono italic underline text-left">Terminal_01: Sector_Forge</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" /><div className="w-3 h-3 rounded-full bg-yellow-500" /><div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-8 text-sm font-mono text-left">
+                  {Object.keys(sectorData).map(sectorKey => (
+                    <div key={sectorKey} onClick={() => setSelectedSector(sectorKey)} className={`cursor-pointer p-5 border transition-all ${selectedSector === sectorKey ? 'border-[#00F0FF] bg-[#00F0FF]/15 ring-1 ring-[#00F0FF]' : 'border-zinc-800 opacity-60 hover:opacity-100'}`}>
+                      <h4 className={`font-black text-xl italic tracking-tighter ${selectedSector === sectorKey ? 'text-[#00F0FF]' : 'text-white'}`}>{sectorKey}</h4>
+                      <p className="text-[10px] text-zinc-500 mt-2 leading-relaxed">{sectorData[sectorKey].desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="absolute top-[320px] left-[20%] w-[85%] glass-morphism p-10 rounded-2xl border border-[#39FF14]/40 z-20 shadow-[0_0_80px_rgba(0,0,0,1)] bg-zinc-950/60 transition-transform hover:translate-y-[-5px]">
+                <div className="flex items-center gap-4 border-b border-[#39FF14]/20 pb-4 mb-8 text-left text-zinc-500">
+                  <ShieldCheck size={22} className="text-[#39FF14] drop-shadow-[0_0_8px_#39FF14]" />
+                  <span className="text-xs text-[#39FF14] uppercase tracking-[0.4em] font-bold font-mono underline decoration-green-900">Terminal_02: {selectedSector}_Matrix</span>
+                </div>
+                <div className="grid grid-cols-2 gap-12 text-left">
+                   <div className="space-y-4">
+                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold border-b border-zinc-800 pb-2 italic">Instance_Specs</p>
+                     <div className="grid grid-cols-1 gap-2 text-[11px] font-mono uppercase text-white tracking-widest">
+                       <p><span className="text-[#00F0FF]">&gt;</span> OS: {sectorData[selectedSector].specs.os}</p>
+                       <p><span className="text-[#00F0FF]">&gt;</span> RAM: {sectorData[selectedSector].specs.ram}</p>
+                       <p><span className="text-[#00F0FF]">&gt;</span> NET: {sectorData[selectedSector].specs.net}</p>
+                       <p><span className="text-[#00F0FF]">&gt;</span> KERN: {sectorData[selectedSector].specs.kern}</p>
+                     </div>
+                   </div>
+                   <div className="space-y-4">
+                     <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold border-b border-zinc-800 pb-2 italic">Vulnerabilities</p>
+                     <div className="flex flex-wrap gap-2">
+                        {sectorData[selectedSector].vulns.map(v => (
+                          <span key={v} className="px-2 py-1 bg-[#39FF14]/10 border border-[#39FF14]/30 text-[#39FF14] text-[9px] font-bold tracking-tighter">CVE_{v}</span>
+                        ))}
+                     </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+{/* --- SECTION 04: NEXUS_OPERATIONS (Combined Leaderboard & AI Intel) --- */}
+        <div className="container mx-auto px-6 py-20 border-t border-[#39FF14]/20 relative">
+          <div className="flex items-center gap-8 mb-12">
+            <h2 className="text-5xl font-mono text-white tracking-tighter uppercase italic">
+              <span className="text-[#39FF14] drop-shadow-[0_0_10px_#39FF14]">04.</span> NEXUS_OPERATIONS
+            </h2>
+            <div className="h-px flex-grow bg-gradient-to-r from-[#39FF14]/40 to-transparent" />
+          </div>
+
+          <div className="flex flex-col xl:flex-row gap-10 items-stretch relative">
+            {/* Terminal Green Connection Line (Vertical for Mobile, Horizontal for Desktop) */}
+            <div className="hidden xl:block absolute top-1/2 left-[48%] w-12 h-px bg-[#39FF14]/30 z-0" />
+            
+            {/* Left Column: HALL_OF_FAME (Shrunk) */}
+            <div className="xl:w-1/2 flex flex-col">
+              <div className="text-left mb-2 opacity-50">
+                <span className="text-[#39FF14] text-[10px] font-mono">root@cyberforge:~/rankings# list --top-5</span>
+              </div>
+              <div className="glass-morphism rounded-2xl overflow-hidden border border-[#39FF14]/20 shadow-xl flex-1 bg-black/40">
+                <div className="bg-zinc-900/60 p-3 border-b border-[#39FF14]/10 flex items-center justify-between px-6">
+                  <Trophy size={14} className="text-[#39FF14]" />
+                  <span className="text-zinc-500 font-mono text-[9px] uppercase tracking-[0.3em]">Operational_Rankings</span>
+                </div>
+                <div className="p-6">
+                  <table className="w-full text-left font-mono">
+                    <tbody>
+                      {leaderboard.map((team, i) => (
+                        <tr key={i} className="border-b border-white/5 hover:bg-[#39FF14]/5 transition-all group">
+                          <td className="py-3 text-[#00F0FF] font-bold text-sm">{team.rank}</td>
+                          <td className="py-3">
+                            <div className="flex items-center gap-3">
+                              <span className="text-white text-sm font-bold">{team.team}</span>
+                              <span className="text-[8px] bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500">{team.flag}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 text-right text-[#39FF14] font-bold text-sm tracking-widest">{team.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: NEURAL_LINK (Shrunk) */}
+            <div className="xl:w-1/2 flex flex-col">
+              <div className="text-left mb-2 opacity-50">
+                <span className="text-[#00F0FF] text-[10px] font-mono">root@cyberforge:~/ai# status --neural-link</span>
+              </div>
+              <div className="glass-morphism rounded-2xl overflow-hidden border border-[#00F0FF]/20 shadow-xl flex-1 bg-black/40 flex flex-col md:flex-row">
+                <div className="p-8 flex-1 text-left space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Command size={16} className="text-[#00F0FF]" />
+                    <span className="text-white font-bold text-sm tracking-widest">FORGE_AI_INTEL</span>
+                  </div>
+                  <p className="text-zinc-400 text-xs font-mono leading-relaxed uppercase">
+                    Neural Link established. The AI assistant is active for real-time decryption logic and exfiltration guidance.
+                  </p>
+                  <ul className="text-[10px] text-zinc-500 space-y-2 font-bold tracking-tighter border-t border-white/5 pt-4">
+                    <li className="flex gap-2"><span className="text-[#39FF14]">&gt;</span> PATTERN_RECOGNITION</li>
+                    <li className="flex gap-2"><span className="text-[#39FF14]">&gt;</span> DYNAMIC_HINT_ENGINE</li>
+                  </ul>
+                </div>
+                <div className="p-6 bg-[#39FF14]/5 flex items-center justify-center border-l border-white/5">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-[#39FF14]/20 rounded-full blur-2xl animate-pulse" />
+                    <Bot size={100} className="text-[#39FF14] relative drop-shadow-[0_0_15px_#39FF14]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Terminal Bottom Divider */}
+          <div className="mt-20 h-px bg-gradient-to-r from-transparent via-[#39FF14]/40 to-transparent" />
+          <div className="mt-8 text-center text-zinc-700 font-mono text-[10px] tracking-[1.5em] uppercase opacity-40 pb-10">
+            root@cyberforge:~# logout --session_closed
+          </div>
+        </div>
+
+      </main>
+
+      {/* --- FLOATING CHATBOT (STRICTLY PRESERVED) --- */}
+      <div className="fixed bottom-12 right-12 z-[100] flex flex-col items-end gap-6 text-left">
+        {isChatOpen && (
+          <div className="w-[420px] h-[600px] glass-morphism border border-green-500/30 rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-20 duration-500">
+            <div className="bg-zinc-900/80 p-6 border-b border-green-500/20 flex justify-between items-center backdrop-blur-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
+                <span className="text-white font-mono font-bold text-sm uppercase italic">FORGE_ASSISTANT_AI.v1</span>
+              </div>
+              <button onClick={() => setIsChatOpen(false)} className="text-zinc-500 hover:text-red-500 transition-colors"><X size={24} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-black/80 p-4"><Chatbot /></div>
+          </div>
+        )}
+        {!isChatOpen && (
+          <button onClick={() => setIsChatOpen(true)} className="p-6 bg-green-600 text-black rounded-full shadow-[0_0_40px_rgba(34,197,94,0.6)] hover:shadow-[0_0_60px_rgba(34,197,94,0.8)] transition-all hover:scale-110 active:scale-95 border-2 border-white/20">
+            <Bot size={36} />
+          </button>
+        )}
       </div>
       <Footer />
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value, progress }) {
+  return (
+    <div className="glass-morphism border border-white/5 p-10 rounded-3xl group hover:border-[#39FF14]/40 transition-all duration-700 relative overflow-hidden bg-zinc-950/40 shadow-2xl">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#39FF14]/5 blur-[50px] pointer-events-none" />
+      <div className="flex justify-between items-start mb-8 text-zinc-500">
+        <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-[#39FF14]/15 transition-colors">{icon}</div>
+        <div className="text-[10px] font-mono text-zinc-600 tracking-[0.4em] uppercase font-bold">{label}</div>
+      </div>
+      <div className="text-4xl font-mono font-black text-white mb-6 bright-neon-text transition-colors text-left">{value}</div>
+      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden text-left">
+        <div className="h-full bg-[#39FF14] shadow-[0_0_10px_#39FF14] transition-all duration-1000 ease-out" style={{ width: progress }} />
+      </div>
     </div>
   );
 }

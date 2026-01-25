@@ -133,6 +133,7 @@ export const deployMachine = async (machineId, domain, modules) => {
     console.log(`\n🚀 Deploying machine ${machineId} with ${modules.length} vulnerabilities`);
     console.log(`Domain: ${domain}, Modules: ${modules.join(', ')}`);
     
+    
     // CRITICAL FIX: Deploy ALL modules together in one container
     // NOT just the first one - all vulnerabilities must co-exist
     

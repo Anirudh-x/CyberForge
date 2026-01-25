@@ -12,6 +12,7 @@ import machineRoutes from './routes/machines.js';
 import flagRoutes from './routes/flags.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import reportRoutes from './routes/reports.js';
+import chatbotRoutes from './routes/chatbot.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -42,6 +43,7 @@ app.use('/api/machines', machineRoutes);
 app.use('/api/flags', authMiddleware, flagRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/reports', authMiddleware, reportRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

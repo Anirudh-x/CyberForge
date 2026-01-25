@@ -11,7 +11,14 @@ router.post('/verify', async (req, res) => {
     const { machineId, vulnerabilityInstanceId, flag } = req.body;
     const userId = req.userId; // From auth middleware
 
+    console.log('🔍 Flag Verification Request:');
+    console.log('   Machine ID:', machineId);
+    console.log('   Vulnerability Instance ID:', vulnerabilityInstanceId);
+    console.log('   Submitted Flag:', flag);
+    console.log('   User ID:', userId);
+
     if (!flag || !machineId || !vulnerabilityInstanceId) {
+      console.log('❌ Missing required fields');
       return res.status(400).json({ 
         success: false,
         error: 'Machine ID, vulnerability instance ID, and flag are required' 
@@ -56,7 +63,15 @@ router.post('/verify', async (req, res) => {
       vuln => vuln.vulnerabilityInstanceId === vulnerabilityInstanceId
     );
 
+    console.log('🔎 Looking for vulnerability instance:', vulnerabilityInstanceId);
+    console.log('   Available instances:', machine.vulnerabilities.map(v => ({
+      id: v.vulnerabilityInstanceId,
+      moduleId: v.moduleId,
+      flag: v.flag
+    })));
+
     if (!matchedVuln) {
+      console.log('❌ Vulnerability instance not found!');
       return res.status(404).json({ 
         success: false,
         correct: false,
@@ -64,14 +79,22 @@ router.post('/verify', async (req, res) => {
       });
     }
 
+    console.log('✓ Found vulnerability:', matchedVuln.moduleId);
+    console.log('   Expected Flag:', matchedVuln.flag);
+    console.log('   Submitted Flag:', flag.trim());
+    console.log('   Flags Match:', matchedVuln.flag === flag.trim());
+
     // Verify flag matches THIS specific instance
     if (matchedVuln.flag !== flag.trim()) {
+      console.log('❌ Flag mismatch!');
       return res.status(400).json({ 
         success: false,
         correct: false,
         message: 'Incorrect flag. Try again!'
       });
     }
+
+    console.log('✅ Flag is correct! Awarding points...');
 
     // Award points based on vulnerability
     const points = matchedVuln.points || 50;

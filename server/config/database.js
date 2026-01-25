@@ -15,6 +15,8 @@ export const connectToDatabase = async () => {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }
 
+    mongoose.set('autoIndex', false);  // Disable automatic index creation globally
+    
     await mongoose.connect(mongoUri);
     
     isConnected = true;
