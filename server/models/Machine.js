@@ -63,7 +63,7 @@ const machineSchema = new mongoose.Schema({
     default: 0
   },
   vulnerabilities: [{
-    vulnerabilityInstanceId: { type: String, required: true, unique: true },  // Unique ID for THIS instance
+    vulnerabilityInstanceId: { type: String, required: true },  // Unique ID for THIS instance (uniqueness enforced by sparse index)
     moduleId: String,       // Type of vulnerability (e.g., 'sql_injection', 'xss')
     route: String,          // Route where vulnerability exists (e.g., /login, /comment)
     points: Number,
@@ -95,6 +95,8 @@ const machineSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, { 
+  autoIndex: false  // Disable automatic index creation
 });
 
 // Update lastModified on save

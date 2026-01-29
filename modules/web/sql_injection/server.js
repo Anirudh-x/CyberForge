@@ -1,0 +1,12 @@
+const express = require('express');
+const router = require('./app');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Mount the router at root for standalone deployment
+app.use('/', router);
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`SQL Injection Lab running on port ${PORT}`);
+});

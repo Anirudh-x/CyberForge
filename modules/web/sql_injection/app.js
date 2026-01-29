@@ -1,6 +1,10 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
-const app = express();
+const router = express.Router();
+
+// Get unique flag from environment variable (set during deployment)
+const FLAG = process.env.FLAG_SQL_INJECTION || 'FLAG{SQL_INJECTION_MASTER}';
+console.log('SQL Injection Lab initialized with flag:', FLAG);
 
 // Initialize SQLite database
 const db = new sqlite3.Database(':memory:');
@@ -12,7 +16,7 @@ db.serialize(() => {
   db.run("INSERT INTO users VALUES (2, 'user', 'user123', 'user')");
 });
 
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -73,7 +77,7 @@ app.get('/', (req, res) => {
   `);
 });
 
-app.get('/login', (req, res) => {
+router.get('/login', (req, res) => {
   const username = req.query.u;
   const password = req.query.p;
   
@@ -129,7 +133,7 @@ app.get('/login', (req, res) => {
           </head>
           <body>
             <h1>✅ LOGIN SUCCESSFUL!</h1>
-            <div class="flag">FLAG{SQL_INJECTION_MASTER}</div>
+            <div class="flag">${FLAG}</div>
             <p>Congratulations! You exploited SQL Injection!</p>
             <a href="/">Back to Lab</a>
           </body>
@@ -171,7 +175,4 @@ app.get('/login', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`SQL Injection Lab running on port ${PORT}`);
-});
+module.exports = router;

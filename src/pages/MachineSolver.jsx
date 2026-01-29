@@ -1,9 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../styles/MachineSolver.css';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Terminal as TerminalIcon, 
+  Globe, 
+  FileSearch, 
+  Flag, 
+  ShieldAlert, 
+  ChevronRight, 
+  Copy, 
+  CheckCircle2, 
+  Lock, 
+  Unlock,
+  AlertTriangle,
+  Lightbulb,
+  X,
+  Cpu,
+  Zap,
+  Box,
+  Radar,
+  ChevronLeft,
+  Activity,
+  Layers,
+  Power,
+  TrendingUp
+} from 'lucide-react';
 
-// Solution data helpers
+// FULL LOGIC HELPERS (Restored to ensure the app actually runs)
 const getSolutionObjective = (moduleId) => {
   const objectives = {
     sql_injection: "Exploit SQL injection vulnerability to bypass authentication and extract database information.",
@@ -30,114 +54,24 @@ const getSolutionObjective = (moduleId) => {
 
 const getSolutionSteps = (moduleId) => {
   const steps = {
-    sql_injection: [
-      "Identify input fields that interact with database queries",
-      "Test for SQL injection using payloads like ' OR 1=1 --",
-      "Bypass authentication or extract data using UNION SELECT statements",
-      "Locate the flag in database tables or application responses"
-    ],
-    xss: [
-      "Identify input fields that reflect user input without sanitization",
-      "Test basic XSS payloads like <script>alert('XSS')</script>",
-      "Try alternative payloads if basic ones are filtered: <img src=x onerror=alert(1)>",
-      "Capture the flag from the response or hidden page elements"
-    ],
-    csrf: [
-      "Analyze the application's request patterns for state-changing operations",
-      "Check if requests lack CSRF tokens or use predictable tokens",
-      "Craft a malicious HTML page that triggers the vulnerable request",
-      "Submit the crafted request to capture the flag"
-    ],
-    file_upload: [
-      "Test file upload functionality with various file types",
-      "Attempt to upload executable files (.php, .jsp, .aspx)",
-      "Bypass filters using double extensions or null bytes",
-      "Access the uploaded file to execute code and retrieve the flag"
-    ],
-    auth_bypass: [
-      "Enumerate authentication endpoints and parameters",
-      "Test for logic flaws like SQL injection in login forms",
-      "Try default credentials or weak password patterns",
-      "Access restricted areas to find the flag"
-    ],
-    weak_ssh: [
-      "Scan for SSH service on standard or non-standard ports",
-      "Use tools like hydra to brute force common credentials",
-      "Try default username/password combinations",
-      "Access the system and locate the flag file"
-    ],
-    exposed_services: [
-      "Perform network reconnaissance using nmap or similar tools",
-      "Identify services running with default configurations",
-      "Exploit known vulnerabilities or misconfigurations",
-      "Gain access and retrieve the flag"
-    ],
-    privesc: [
-      "Enumerate the system for privilege escalation vectors",
-      "Check for SUID binaries, sudo misconfigurations, or kernel exploits",
-      "Exploit identified vulnerabilities to gain root access",
-      "Read the flag from protected directories"
-    ],
-    cron_jobs: [
-      "List running cron jobs using crontab -l or /etc/crontab",
-      "Identify jobs with writable scripts or insecure permissions",
-      "Modify the cron job to execute malicious code",
-      "Wait for execution or trigger manually to capture the flag"
-    ],
-    log_analysis: [
-      "Review provided log files for suspicious patterns",
-      "Identify failed login attempts, unusual network connections, or malware signatures",
-      "Correlate events across multiple log sources",
-      "Extract the flag from discovered attack indicators"
-    ],
-    malware_detection: [
-      "Analyze suspicious files using static and dynamic analysis",
-      "Check file hashes against malware databases",
-      "Examine network connections and file modifications",
-      "Extract the flag from malware artifacts or behavior"
-    ],
-    siem_alert: [
-      "Review SIEM alert details and context",
-      "Investigate related logs and events",
-      "Determine if the alert is a true positive or false positive",
-      "Document findings and extract the flag from investigation"
-    ],
-    public_bucket: [
-      "Enumerate cloud storage buckets using common naming patterns",
-      "Test bucket permissions for public read access",
-      "List bucket contents and download files",
-      "Find the flag in exposed files"
-    ],
-    iam_policy: [
-      "Review IAM policies and role assignments",
-      "Identify overly permissive policies or wildcards",
-      "Assume roles with excessive permissions",
-      "Access restricted resources to retrieve the flag"
-    ],
-    env_vars: [
-      "Inspect application configuration files and environment",
-      "Check for exposed .env files or debug endpoints",
-      "Extract credentials from environment variables",
-      "Use credentials to access protected resources and find the flag"
-    ],
-    memory_dump: [
-      "Load memory dump in forensic tools like Volatility",
-      "Extract process information and network connections",
-      "Dump process memory to find passwords or keys",
-      "Locate and extract the flag from memory artifacts"
-    ],
-    disk_image: [
-      "Mount disk image using forensic tools",
-      "Recover deleted files using file carving techniques",
-      "Analyze file system metadata and timestamps",
-      "Find the flag in recovered or hidden files"
-    ],
-    hidden_files: [
-      "Use ls -la to show hidden files starting with .",
-      "Check alternate data streams on NTFS systems",
-      "Examine file system slack space",
-      "Extract the flag from concealed locations"
-    ]
+    sql_injection: ["Identify input fields that interact with database queries", "Test for SQL injection using payloads like ' OR 1=1 --", "Bypass authentication or extract data using UNION SELECT statements", "Locate the flag in database tables or application responses"],
+    xss: ["Identify input fields that reflect user input without sanitization", "Test basic XSS payloads like <script>alert('XSS')</script>", "Try alternative payloads if basic ones are filtered: <img src=x onerror=alert(1)>", "Capture the flag from the response or hidden page elements"],
+    csrf: ["Analyze the application's request patterns for state-changing operations", "Check if requests lack CSRF tokens or use predictable tokens", "Craft a malicious HTML page that triggers the vulnerable request", "Submit the crafted request to capture the flag"],
+    file_upload: ["Test file upload functionality with various file types", "Attempt to upload executable files (.php, .jsp, .aspx)", "Bypass filters using double extensions or null bytes", "Access the uploaded file to execute code and retrieve the flag"],
+    auth_bypass: ["Enumerate authentication endpoints and parameters", "Test for logic flaws like SQL injection in login forms", "Try default credentials or weak password patterns", "Access restricted areas to find the flag"],
+    weak_ssh: ["Scan for SSH service on standard or non-standard ports", "Use tools like hydra to brute force common credentials", "Try default username/password combinations", "Access the system and locate the flag file"],
+    exposed_services: ["Perform network reconnaissance using nmap or similar tools", "Identify services running with default configurations", "Exploit known vulnerabilities or misconfigurations", "Gain access and retrieve the flag"],
+    privesc: ["Enumerate the system for privilege escalation vectors", "Check for SUID binaries, sudo misconfigurations, or kernel exploits", "Exploit identified vulnerabilities to gain root access", "Read the flag from protected directories"],
+    cron_jobs: ["List running cron jobs using crontab -l or /etc/crontab", "Identify jobs with writable scripts or insecure permissions", "Modify the cron job to execute malicious code", "Wait for execution or trigger manually to capture the flag"],
+    log_analysis: ["Review provided log files for suspicious patterns", "Identify failed login attempts, unusual network connections, or malware signatures", "Correlate events across multiple log sources", "Extract the flag from discovered attack indicators"],
+    malware_detection: ["Analyze suspicious files using static and dynamic analysis", "Check file hashes against malware databases", "Examine network connections and file modifications", "Extract the flag from malware artifacts or behavior"],
+    siem_alert: ["Review SIEM alert details and context", "Investigate related logs and events", "Determine if the alert is a true positive or false positive", "Document findings and extract the flag from investigation"],
+    public_bucket: ["Enumerate cloud storage buckets using common naming patterns", "Test bucket permissions for public read access", "List bucket contents and download files", "Find the flag in exposed files"],
+    iam_policy: ["Review IAM policies and role assignments", "Identify overly permissive policies or wildcards", "Assume roles with excessive permissions", "Access restricted resources to retrieve the flag"],
+    env_vars: ["Inspect application configuration files and environment", "Check for exposed .env files or debug endpoints", "Extract credentials from environment variables", "Use credentials to access protected resources and find the flag"],
+    memory_dump: ["Load memory dump in forensic tools like Volatility", "Extract process information and network connections", "Dump process memory to find passwords or keys", "Locate and extract the flag from memory artifacts"],
+    disk_image: ["Mount disk image using forensic tools", "Recover deleted files using file carving techniques", "Analyze file system metadata and timestamps", "Find the flag in recovered or hidden files"],
+    hidden_files: ["Use ls -la to show hidden files starting with .", "Check alternate data streams on NTFS systems", "Examine file system slack space", "Extract the flag from concealed locations"]
   };
   return steps[moduleId] || ["Analyze the challenge", "Identify vulnerabilities", "Exploit the weakness", "Capture the flag"];
 };
@@ -174,762 +108,507 @@ const MachineSolver = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('browser');
-  const [flagInputs, setFlagInputs] = useState({});  // Per-vulnerability flag inputs
-  const [flagResults, setFlagResults] = useState({});  // Per-vulnerability results
-  const [submittingFlags, setSubmittingFlags] = useState({});  // Per-vulnerability submission state
+  const [flagInputs, setFlagInputs] = useState({});
+  const [flagResults, setFlagResults] = useState({});
+  const [submittingFlags, setSubmittingFlags] = useState({});
   const [uploadingReport, setUploadingReport] = useState(false);
   const [reportFile, setReportFile] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [solvedVulns, setSolvedVulns] = useState([]);
   const [activeVulnerability, setActiveVulnerability] = useState(null);
   const [showSolutions, setShowSolutions] = useState(false);
-  const [machineSolutions, setMachineSolutions] = useState(null);  // Machine-specific solutions
-  const [allUserMachines, setAllUserMachines] = useState([]);  // All user machines for navigation
+  const [machineSolutions, setMachineSolutions] = useState(null);
+  const [allUserMachines, setAllUserMachines] = useState([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
     fetchMachine();
     fetchUserStats();
     fetchMachineSolutions();
-    fetchAllMachines();  // Fetch all machines for navigation
-    
-    const interval = setInterval(() => {
-      if (machine?.status === 'building') {
-        fetchMachine();
-      }
-    }, 3000);
-
+    fetchAllMachines();
+    const interval = setInterval(() => { if (machine?.status === 'building') fetchMachine(); }, 3000);
     return () => clearInterval(interval);
   }, [id, isAuthenticated]);
 
   const fetchMachine = async () => {
     try {
-      const response = await fetch(`/api/machines/${id}`, {
-        credentials: 'include'
-      });
+      const response = await fetch(`/api/machines/${id}`, { credentials: 'include' });
       const data = await response.json();
-
       if (data.success) {
         setMachine(data.machine);
-        // Set default tab based on machine type
-        if (data.machine.domain === 'web' || data.machine.domain === 'cloud') {
-          setActiveTab('browser');
-        } else if (data.machine.domain === 'forensics' || data.machine.domain === 'blue_team') {
-          setActiveTab('files');
-        } else {
-          setActiveTab('terminal');
-        }
-        // Set first vulnerability as active
-        if (data.machine.vulnerabilities && data.machine.vulnerabilities.length > 0) {
-          setActiveVulnerability(data.machine.vulnerabilities[0]);
-        }
+        if (data.machine.vulnerabilities && !activeVulnerability) setActiveVulnerability(data.machine.vulnerabilities[0]);
         setError('');
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError('Error loading machine');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+      } else setError(data.message);
+    } catch (err) { setError('Error loading machine'); } finally { setLoading(false); }
   };
 
   const fetchUserStats = async () => {
     try {
-      const response = await fetch('/api/flags/stats', {
-        credentials: 'include'
-      });
+      const response = await fetch('/api/flags/stats', { credentials: 'include' });
       const data = await response.json();
       if (data.success) {
         setUserStats(data.stats);
-        // Get solved vulns for this machine using vulnerabilityInstanceId
-        const machineSolved = data.stats.solvedMachines?.includes(id);
         setSolvedVulns(data.stats.solvedVulnerabilities?.filter(v => v.machineId === id) || []);
       }
-    } catch (err) {
-      console.error('Error fetching user stats:', err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  // Fetch machine-specific solutions
   const fetchMachineSolutions = async () => {
     if (!id) return;
-    
     try {
-      const response = await fetch(`/api/flags/solutions/${id}`, {
-        credentials: 'include'
-      });
+      const response = await fetch(`/api/flags/solutions/${id}`, { credentials: 'include' });
       const data = await response.json();
-      if (data.success) {
-        setMachineSolutions(data.solutions);
-      }
-    } catch (err) {
-      console.error('Error fetching solutions:', err);
-    }
+      if (data.success) setMachineSolutions(data.solutions);
+    } catch (err) { console.error(err); }
   };
 
-  // Fetch all user machines for navigation
   const fetchAllMachines = async () => {
     try {
-      const response = await fetch('/api/machines/my-machines', {
-        credentials: 'include'
-      });
+      const response = await fetch('/api/machines/my-machines', { credentials: 'include' });
       const data = await response.json();
-      if (data.success) {
-        // Filter only running machines
-        const runningMachines = data.machines.filter(m => m.status === 'running');
-        setAllUserMachines(runningMachines);
-      }
-    } catch (err) {
-      console.error('Error fetching all machines:', err);
-    }
+      if (data.success) setAllUserMachines(data.machines.filter(m => m.status === 'running'));
+    } catch (err) { console.error(err); }
   };
 
-  // Check if machine is fully solved and navigate to next
   const checkAndNavigateToNextMachine = () => {
     if (!machine || !allUserMachines.length) return;
-
     const totalVulns = machine.vulnerabilities?.length || 0;
-    const solvedCount = solvedVulns.length;
-
-    if (solvedCount === totalVulns && totalVulns > 0) {
-      // Machine fully solved - find next unsolved machine
+    if (solvedVulns.length === totalVulns && totalVulns > 0) {
       const currentIndex = allUserMachines.findIndex(m => m._id === machine._id);
-      
       if (currentIndex !== -1 && currentIndex < allUserMachines.length - 1) {
-        // Navigate to next machine
         const nextMachine = allUserMachines[currentIndex + 1];
-        setTimeout(() => {
-          navigate(`/solve/${nextMachine._id}`);
-        }, 2000); // 2 second delay to show completion message
+        setTimeout(() => { navigate(`/solve/${nextMachine._id}`); }, 2000); 
       }
     }
   };
 
-  // Handle flag submission for specific vulnerability instance
   const handleFlagSubmit = async (e, vulnerabilityInstanceId) => {
     e.preventDefault();
     const flagValue = flagInputs[vulnerabilityInstanceId];
-    
     if (!flagValue?.trim() || !machine) return;
-
     setSubmittingFlags(prev => ({ ...prev, [vulnerabilityInstanceId]: true }));
     setFlagResults(prev => ({ ...prev, [vulnerabilityInstanceId]: null }));
-
     try {
-      const response = await fetch('/api/flags/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          machineId: machine._id,
-          vulnerabilityInstanceId: vulnerabilityInstanceId,
-          flag: flagValue.trim()
-        })
-      });
-
+      const requestBody = { machineId: machine._id, vulnerabilityInstanceId, flag: flagValue.trim() };
+      const response = await fetch('/api/flags/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(requestBody) });
       const data = await response.json();
       setFlagResults(prev => ({ ...prev, [vulnerabilityInstanceId]: data }));
-
       if (data.correct) {
-        // Clear the input for this vulnerability
         setFlagInputs(prev => ({ ...prev, [vulnerabilityInstanceId]: '' }));
-        fetchUserStats();
-        fetchMachine();
-        fetchMachineSolutions();
-        
-        // Check if all vulnerabilities are solved and navigate
-        setTimeout(() => {
-          checkAndNavigateToNextMachine();
-        }, 100);
+        // SYNC ALL DATA IMMEDIATELY
+        await Promise.all([fetchUserStats(), fetchMachine(), fetchMachineSolutions()]);
+        setTimeout(() => checkAndNavigateToNextMachine(), 100);
       }
-    } catch (err) {
-      setFlagResults(prev => ({ 
-        ...prev, 
-        [vulnerabilityInstanceId]: {
-          correct: false,
-          message: 'Error submitting flag'
-        }
-      }));
-    } finally {
-      setSubmittingFlags(prev => ({ ...prev, [vulnerabilityInstanceId]: false }));
-    }
+    } catch (err) { 
+      setFlagResults(prev => ({ ...prev, [vulnerabilityInstanceId]: { correct: false, message: 'Error submitting flag' } }));
+    } finally { setSubmittingFlags(prev => ({ ...prev, [vulnerabilityInstanceId]: false })); }
   };
 
   const handleReportUpload = async (e) => {
     e.preventDefault();
     if (!reportFile || !machine) return;
-
     const formData = new FormData();
     formData.append('report', reportFile);
-
     setUploadingReport(true);
-
     try {
-      const response = await fetch(`/api/reports/${machine._id}/upload`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      });
-
+      const response = await fetch(`/api/reports/${machine._id}/upload`, { method: 'POST', credentials: 'include', body: formData });
       const data = await response.json();
-      
-      if (data.success) {
-        alert('✅ Lab report uploaded successfully!');
-        setReportFile(null);
-      } else {
-        alert(`❌ ${data.message}`);
-      }
-    } catch (err) {
-      alert('❌ Error uploading report');
-      console.error(err);
-    } finally {
-      setUploadingReport(false);
-    }
+      if (data.success) { alert('✅ Lab report uploaded successfully!'); setReportFile(null); }
+      else alert(`❌ ${data.message}`);
+    } catch (err) { alert('❌ Error uploading report'); } finally { setUploadingReport(false); }
   };
 
   const renderLabHeader = () => {
     if (!machine) return null;
-
-    // Debug logging
-    console.log('Machine data:', {
-      machineId: machine._id,
-      vulnerabilities: machine.vulnerabilities,
-      modules: machine.modules,
-      vulnerabilitiesLength: machine.vulnerabilities?.length,
-      modulesLength: machine.modules?.length
-    });
-
     const totalVulns = machine.vulnerabilities?.length || machine.modules?.length || 0;
     const solvedCount = solvedVulns.length;
-    const isFullySolved = solvedCount === totalVulns && totalVulns > 0;
+    const currentPoints = solvedVulns.reduce((acc, curr) => acc + curr.points, 0);
 
     return (
-      <div className="lab-header">
-        <div className="lab-header-top">
-          <div>
-            <h1 className="lab-title">{machine.name}</h1>
-            <span className={`domain-badge domain-${machine.domain}`}>
-              {machine.domain.replace('_', ' ').toUpperCase()}
-            </span>
-          </div>
-          <div className="lab-points-header">
-            <span className="label">Machine Points</span>
-            <span className="value">{machine.totalPoints || 0}</span>
-          </div>
-        </div>
-        
-        <div className="lab-header-info">
-          <div className="vuln-progress">
-            <span className="progress-label">Vulnerabilities</span>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${totalVulns > 0 ? (solvedCount / totalVulns) * 100 : 0}%` }}
-              />
+      <div className="space-y-6">
+        <div className="relative group">
+            <div className="absolute -inset-1 bg-emerald-500/20 rounded blur group-hover:opacity-100 transition duration-500"></div>
+            <div className="relative bg-black border-2 border-emerald-500/30 p-6 rounded-sm shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] text-emerald-500 font-black tracking-[0.4em] uppercase glow-text italic">Active_Node_Linked</span>
+                    <span className="text-[9px] font-mono text-emerald-900">ID: {machine._id.slice(-6).toUpperCase()}</span>
+                </div>
+                <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4 glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">
+                  {machine.name}
+                </h1>
+                <div className="flex gap-2">
+                    <span className="px-2 py-0.5 bg-emerald-900/20 border border-emerald-500/40 text-[9px] font-black text-emerald-400 uppercase tracking-widest">Sctr: {machine.domain}</span>
+                    <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30 text-[9px] font-black text-yellow-500 uppercase tracking-widest flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.1)]">
+                        <TrendingUp size={10}/> XP: {currentPoints} / {machine.totalPoints}
+                    </span>
+                </div>
             </div>
-            <span className="progress-text">{solvedCount}/{totalVulns} Captured</span>
-          </div>
-          
-          {machine.vulnerabilities && machine.vulnerabilities.length > 0 && (
-            <div className="vuln-list">
-              <span className="vuln-list-label">Included Vulnerabilities:</span>
-              <div className="vuln-chips">
-                {machine.vulnerabilities.map((vuln, idx) => {
-                  const isSolved = solvedVulns.some(v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId);
-                  return (
-                    <div key={idx} className={`vuln-chip ${isSolved ? 'solved' : ''}`}>
-                      {isSolved && '✓ '}
-                      {vuln.moduleId.replace(/_/g, ' ')} ({vuln.points}pts)
+        </div>
+
+        <div className="bg-[#050505] p-5 border border-white/5 rounded-sm relative group overflow-hidden shadow-2xl">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+            <div className="flex justify-between items-end mb-4">
+                <div className="space-y-1">
+                    <span className="text-[10px] font-black text-emerald-900 tracking-widest uppercase block italic">Neural_Breach_Status</span>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-white italic tracking-tighter glow-text">{Math.round((solvedCount / totalVulns) * 100)}%</span>
+                        <span className="text-[10px] font-mono text-emerald-800 uppercase animate-pulse">Infiltrating...</span>
                     </div>
-                  );
-                })}
-              </div>
+                </div>
+                <div className="text-right flex flex-col">
+                    <span className="text-xs font-mono font-bold text-emerald-400 drop-shadow-[0_0_5px_#10b981]">{solvedCount} / {totalVulns}</span>
+                    <span className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">Captured</span>
+                </div>
             </div>
-          )}
+            <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${totalVulns > 0 ? (solvedCount / totalVulns) * 100 : 0}%` }} className="h-full bg-emerald-500 shadow-[0_0_20px_#10b981]" />
+            </div>
         </div>
 
-        {isFullySolved && (
-          <div className="lab-complete-banner">
-            🎉 Lab Completed! All vulnerabilities captured. You can now upload your lab report.
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <Radar size={14} className="text-emerald-500 animate-spin-slow" />
+            <span className="text-[11px] font-black text-emerald-500 tracking-[0.4em] uppercase glow-text">Selectable_Vectors</span>
           </div>
-        )}
-
-        {/* Vulnerability Selector - only show if multiple vulnerabilities */}
-        {machine.vulnerabilities && machine.vulnerabilities.length > 1 && (
-          <div className="vulnerability-selector">
-            <h4 className="selector-title">Select Vulnerability to Solve:</h4>
-            <div className="vulnerability-tabs">
-              {machine.vulnerabilities.map((vuln, idx) => {
-                const isSolved = solvedVulns.some(v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId);
-                const isActive = activeVulnerability?.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveVulnerability(vuln)}
-                    className={`vulnerability-tab ${isActive ? 'active' : ''} ${isSolved ? 'solved' : ''}`}
-                  >
-                    {isSolved && <span className="check-icon">✓</span>}
-                    <span className="vuln-name">{vuln.moduleId.replace(/_/g, ' ')}</span>
-                    <span className="vuln-points">{vuln.points}pts</span>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="grid grid-cols-1 gap-2">
+            {machine.vulnerabilities?.map((vuln, idx) => {
+              const isSolved = solvedVulns.some(v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId);
+              const isActive = activeVulnerability?.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setActiveVulnerability(vuln)}
+                  className={`w-full group relative flex items-center justify-between p-4 border transition-all duration-500
+                    ${isActive ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'border-white/5 bg-[#0a0a0a] hover:border-emerald-500/40'}
+                    ${isSolved ? 'opacity-60' : ''}`}
+                >
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className={`${isActive ? 'text-emerald-400 drop-shadow-[0_0_10px_#10b981]' : (isSolved ? 'text-emerald-800' : 'text-zinc-800')}`}>
+                        {isSolved ? <Unlock size={18} /> : <Lock size={18} />}
+                    </div>
+                    <div className="flex flex-col text-left">
+                        <span className={`text-[8px] font-black tracking-[0.2em] ${isActive ? 'text-emerald-400' : 'text-zinc-700'}`}>VECTOR_0{idx + 1}</span>
+                        <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{vuln.moduleId.replace(/_/g, ' ')}</span>
+                    </div>
+                  </div>
+                  <div className={`font-mono text-[10px] font-black transition-colors relative z-10 ${isActive ? 'text-emerald-400' : 'text-emerald-900'}`}>
+                    {vuln.points} XP
+                  </div>
+                  {isActive && <motion.div layoutId="active-marker" className="absolute left-0 top-0 w-[3px] h-full bg-emerald-400 shadow-[5px_0_15px_#10b981]" />}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     );
   };
 
   const renderTabBar = () => {
     const tabs = [];
-    
-    if (machine.domain === 'web' || machine.domain === 'cloud') {
-      tabs.push({ id: 'browser', label: '🌐 Browser', icon: '🌐' });
-    }
-    
-    if (machine.domain === 'red_team' || machine.domain === 'cloud' || machine.domain === 'forensics' || machine.terminalEnabled) {
-      tabs.push({ id: 'terminal', label: '💻 Terminal', icon: '💻' });
-    }
-    
-    if (machine.domain === 'blue_team' || machine.domain === 'forensics') {
-      tabs.push({ id: 'files', label: '📁 Files', icon: '📁' });
-    }
-    
-    tabs.push({ id: 'flags', label: '🚩 Flags', icon: '🚩' });
+    if (machine.domain === 'web' || machine.domain === 'cloud') tabs.push({ id: 'browser', label: 'INTERFACE', icon: <Globe size={20} /> });
+    if (machine.domain === 'red_team' || machine.domain === 'cloud' || machine.domain === 'forensics' || machine.terminalEnabled) tabs.push({ id: 'terminal', label: 'SHELL', icon: <TerminalIcon size={20} /> });
+    if (machine.domain === 'blue_team' || machine.domain === 'forensics') tabs.push({ id: 'files', label: 'BINARY', icon: <FileSearch size={20} /> });
+    tabs.push({ id: 'flags', label: 'INFILTRATE', icon: <Flag size={20} /> });
 
     return (
-      <div className="tab-bar">
+      <nav className="flex bg-[#050505] border border-white/10 p-1 gap-1 rounded-t-sm">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+            className={`flex-1 flex items-center justify-center gap-3 py-4 text-[11px] font-black tracking-[0.25em] transition-all duration-300 relative group
+              ${activeTab === tab.id ? 'text-emerald-400 bg-emerald-500/10 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]' : 'text-zinc-600 hover:text-zinc-400 hover:bg-white/5'}`}
           >
-            <span className="tab-icon">{tab.icon}</span>
-            <span className="tab-label">{tab.label}</span>
+            {tab.icon} {tab.label}
+            {activeTab === tab.id && <motion.div layoutId="tab-glow" className="absolute bottom-0 left-0 w-full h-[2px] bg-emerald-500 shadow-[0_0_15px_#10b981]" />}
           </button>
         ))}
-      </div>
+      </nav>
     );
   };
 
-  const renderBrowserTab = () => {
-    return (
-      <div className="tab-content">
-        <div className="tab-header">
-          <h3>🌐 Browser Interface</h3>
-          <a 
-            href={machine.access?.url || machine.accessUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn-open-new"
-          >
-            Open in New Tab →
-          </a>
+  const renderBrowserTab = () => (
+    <div className="bg-[#020202] border-x border-b border-white/10 flex flex-col h-[750px] shadow-2xl overflow-hidden">
+      <div className="flex justify-between items-center px-8 py-4 border-b border-white/5 bg-[#080808]">
+        <div className="flex items-center gap-3 text-emerald-500/80">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+            <span className="text-[11px] font-black tracking-[0.4em] uppercase glow-text italic">Live_Node_Signal</span>
         </div>
-        <div className="iframe-container">
-          <iframe
-            src={machine.access?.url || machine.accessUrl}
-            title={machine.name}
-            className="lab-iframe"
-          />
-        </div>
+        <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-600 hover:text-emerald-400 transition-all uppercase italic">
+          DECOUPLE_WINDOW <ChevronRight size={14} className="inline ml-1"/>
+        </a>
       </div>
-    );
-  };
+      <div className="flex-1 bg-black relative">
+        <iframe src={machine.access?.url || machine.accessUrl} title={machine.name} className="w-full h-full border-none opacity-80" />
+      </div>
+    </div>
+  );
 
   const renderTerminalTab = () => {
     const sshCommand = machine.access?.terminal || `ssh user@localhost -p ${machine.port || '8022'}`;
-    
     return (
-      <div className="tab-content">
-        <div className="tab-header">
-          <h3>💻 Terminal Access</h3>
-        </div>
-        
-        <div className="terminal-instructions">
-          <h4>🔐 SSH Connection Command:</h4>
-          <div className="code-block">
-            <code>{sshCommand}</code>
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(sshCommand);
-                alert('Command copied to clipboard!');
-              }}
-              className="copy-btn"
-            >
-              📋 Copy
-            </button>
-          </div>
-          
-          <div className="credentials-info">
-            <p><strong>Default Credentials:</strong></p>
-            <ul>
-              <li>Username: <code>ctfuser</code></li>
-              <li>Password: <code>password123</code></li>
-            </ul>
-          </div>
-
-          <div className="objectives-list">
-            <h4>📋 Objectives:</h4>
-            <ul>
-              <li>Connect to the SSH server using provided credentials</li>
-              <li>Explore the system and identify vulnerabilities</li>
-              <li>Find and capture all flags</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderFilesTab = () => {
-    return (
-      <div className="tab-content">
-        <div className="tab-header">
-          <h3>📁 File Analysis</h3>
-          <a 
-            href={machine.access?.url || machine.accessUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn-open-new"
-          >
-            Open in New Tab →
-          </a>
-        </div>
-        
-        <p className="hint">💡 Download and analyze files locally to find hidden vulnerabilities</p>
-        
-        <div className="iframe-container">
-          <iframe
-            src={machine.access?.url || machine.accessUrl}
-            title={machine.name}
-            className="lab-iframe"
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const renderFlagsTab = () => {
-    const totalVulns = machine.vulnerabilities?.length || 0;
-    const solvedCount = solvedVulns.length;
-    const allSolved = solvedCount === totalVulns && totalVulns > 0;
-
-    // Get current machine index for display
-    const currentMachineIndex = allUserMachines.findIndex(m => m._id === machine._id);
-    const machineNumber = currentMachineIndex !== -1 ? currentMachineIndex + 1 : 1;
-    const totalMachines = allUserMachines.length;
-
-    return (
-      <div className="tab-content flags-tab">
-        <div className="tab-header">
-          <h3>🚩 Flag Submission</h3>
-          <div className="flags-count-group">
-            <span className="flags-count">{solvedCount}/{totalVulns} Captured</span>
-            {totalMachines > 1 && (
-              <span className="machine-counter">Machine {machineNumber} of {totalMachines}</span>
-            )}
-          </div>
-        </div>
-
-        {allSolved && (
-          <div className="all-flags-captured-banner">
-            🎉 All flags captured for this machine!
-            {currentMachineIndex < totalMachines - 1 && (
-              <span className="next-machine-hint">Loading next machine...</span>
-            )}
-          </div>
-        )}
-
-        {/* Render ONE flag input per vulnerability instance */}
-        <div className="flag-submissions-list">
-          {machine.vulnerabilities && machine.vulnerabilities.map((vuln, idx) => {
-            const isSolved = solvedVulns.some(
-              v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId
-            );
-            const flagValue = flagInputs[vuln.vulnerabilityInstanceId] || '';
-            const isSubmitting = submittingFlags[vuln.vulnerabilityInstanceId];
-            const result = flagResults[vuln.vulnerabilityInstanceId];
-
-            return (
-              <div 
-                key={vuln.vulnerabilityInstanceId} 
-                className={`flag-submission-item ${isSolved ? 'solved' : ''}`}
-              >
-                <div className="flag-item-header">
-                  <div className="flag-item-title">
-                    <span className="vuln-number">#{idx + 1}</span>
-                    <span className="vuln-name">{vuln.moduleId.replace(/_/g, ' ')}</span>
-                    <span className="vuln-points">{vuln.points} pts</span>
-                  </div>
-                  {isSolved && (
-                    <span className="solved-badge-inline">✓ SOLVED</span>
-                  )}
+      <div className="bg-[#020202] border-x border-b border-white/10 p-16 h-[750px] flex flex-col justify-center">
+        <div className="max-w-3xl mx-auto w-full space-y-10">
+            <div className="space-y-4">
+                <label className="text-[11px] font-black text-emerald-900 tracking-[0.5em] uppercase block pl-2 italic">Access_Protocol</label>
+                <div className="bg-black border-2 border-emerald-900/30 p-8 rounded flex justify-between items-center group shadow-[inset_0_0_40px_rgba(0,0,0,1)]">
+                    <code className="text-2xl font-black text-emerald-400 tracking-tighter glow-text">{sshCommand}</code>
+                    <button onClick={() => { navigator.clipboard.writeText(sshCommand); alert('COPIED!'); }} className="p-4 bg-emerald-500/5 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-black hover:shadow-[0_0_30px_#10b981] transition-all rounded-sm">
+                        <Copy size={22}/>
+                    </button>
                 </div>
-
-                {!isSolved ? (
-                  <form onSubmit={(e) => handleFlagSubmit(e, vuln.vulnerabilityInstanceId)}>
-                    <div className="flag-input-group">
-                      <input
-                        type="text"
-                        value={flagValue}
-                        onChange={(e) => setFlagInputs(prev => ({
-                          ...prev,
-                          [vuln.vulnerabilityInstanceId]: e.target.value
-                        }))}
-                        placeholder={`FLAG{...} for ${vuln.moduleId.replace(/_/g, ' ')}`}
-                        className="flag-input"
-                        disabled={isSubmitting}
-                      />
-                      <button 
-                        type="submit" 
-                        className="btn-submit-flag"
-                        disabled={isSubmitting || !flagValue.trim()}
-                      >
-                        {isSubmitting ? '⏳ Checking...' : '✓ Submit'}
-                      </button>
-                    </div>
-                    
-                    {result && (
-                      <div className={`flag-result ${result.correct ? 'correct' : 'incorrect'}`}>
-                        {result.correct ? (
-                          <>
-                            <p className="result-message">✅ {result.message}</p>
-                            <p className="points-earned">+{result.points} points!</p>
-                          </>
-                        ) : (
-                          <p className="result-message">❌ {result.message}</p>
-                        )}
-                      </div>
-                    )}
-                  </form>
-                ) : (
-                  <div className="flag-solved-display">
-                    <div className="solved-checkmark">✓</div>
-                    <div className="solved-details">
-                      <p className="solved-message">Flag captured successfully!</p>
-                      <p className="solved-points">+{vuln.points} points earned</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {solvedVulns.length > 0 && (
-          <div className="solved-flags-summary">
-            <h4>Completion Progress:</h4>
-            <div className="progress-bar-container">
-              <div 
-                className="progress-bar-fill" 
-                style={{ width: `${(solvedCount / totalVulns) * 100}%` }}
-              />
             </div>
-            <p className="progress-text">
-              {solvedCount} of {totalVulns} vulnerabilities exploited
-            </p>
-          </div>
-        )}
+            <div className="grid grid-cols-2 gap-10">
+                <div className="space-y-3 bg-[#080808] p-6 border border-white/5 rounded-sm">
+                    <label className="text-[10px] font-black text-zinc-700 tracking-[0.3em] uppercase block italic">Token</label>
+                    <code className="text-white text-xl font-bold glow-text">ctfuser</code>
+                </div>
+                <div className="space-y-3 bg-[#080808] p-6 border border-white/5 rounded-sm">
+                    <label className="text-[10px] font-black text-zinc-700 tracking-[0.3em] uppercase block italic">Secret</label>
+                    <code className="text-white text-xl font-bold glow-text">password123</code>
+                </div>
+            </div>
+            <div className="p-8 bg-red-950/10 border-2 border-red-500/20 rounded-sm">
+                <h4 className="flex items-center gap-3 text-red-500 text-[11px] font-black uppercase mb-6 tracking-[0.4em] glow-text italic underline">MISSION_GUIDELINES</h4>
+                <ul className="text-xs text-red-100/30 space-y-4 font-bold italic">
+                    <li>[!] SECURE RSA-4096 BIT TUNNEL ENCRYPTION</li>
+                    <li>[!] DATA BLOCKS LOCATED WITHIN /ROOT/FS</li>
+                </ul>
+            </div>
+        </div>
       </div>
     );
   };
+
+  const renderFilesTab = () => (
+    <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
+      <div className="px-10 py-8 border-b border-white/5 bg-[#080808] flex items-center gap-6">
+          <div className="p-4 bg-emerald-500 text-black rounded shadow-[0_0_30px_#10b981] animate-pulse"><FileSearch size={24}/></div>
+          <div>
+            <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase italic">ENCRYPTED_VOLUMES_SCAN</h3>
+            <p className="text-[10px] text-emerald-800 font-bold tracking-widest mt-1 uppercase">Decoding file metadata...</p>
+          </div>
+      </div>
+      <div className="flex-1 bg-black">
+        <iframe src={machine.access?.url || machine.accessUrl} title={machine.name} className="w-full h-full border-none opacity-40 grayscale" />
+      </div>
+    </div>
+  );
+
+  const renderFlagsTab = () => (
+    <div className="space-y-8 h-[750px] overflow-y-auto custom-scrollbar pr-6">
+      {machine.vulnerabilities?.map((vuln, idx) => {
+        const isSolved = solvedVulns.some(v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId);
+        const flagValue = flagInputs[vuln.vulnerabilityInstanceId] || '';
+        const isSubmitting = submittingFlags[vuln.vulnerabilityInstanceId];
+        const result = flagResults[vuln.vulnerabilityInstanceId];
+        return (
+          <div key={vuln.vulnerabilityInstanceId} className={`p-10 border shadow-2xl transition-all duration-700 relative overflow-hidden group
+              ${isSolved ? 'border-emerald-500/20 bg-emerald-950/5 opacity-50' : 'border-white/10 bg-[#080808]'}`}>
+            <div className="flex justify-between items-start mb-10">
+              <div className="flex items-center gap-10">
+                  <span className="text-6xl font-black text-emerald-950/20 italic font-mono">0{idx + 1}</span>
+                  <div className="space-y-2">
+                      <span className="text-[11px] font-black tracking-[0.5em] text-emerald-900 uppercase block pl-1 italic">SUB_PROCESS</span>
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{vuln.moduleId.replace(/_/g, ' ')}</h3>
+                  </div>
+              </div>
+              <div className="text-right bg-emerald-500/5 p-4 border border-emerald-500/10 rounded-sm">
+                  <span className="text-[10px] font-black text-emerald-500/60 tracking-[0.4em] uppercase block mb-1">XP_ALLOCATION</span>
+                  <span className="text-2xl font-black font-mono text-white glow-text">{vuln.points}</span>
+              </div>
+            </div>
+            {!isSolved ? (
+              <form onSubmit={(e) => handleFlagSubmit(e, vuln.vulnerabilityInstanceId)} className="space-y-6 relative z-10">
+                <div className="flex gap-4">
+                  <input
+                      type="text"
+                      value={flagValue}
+                      onChange={(e) => setFlagInputs(prev => ({ ...prev, [vuln.vulnerabilityInstanceId]: e.target.value }))}
+                      placeholder="FLAG{ACCESS_KEY}"
+                      className="flex-1 bg-black border-2 border-emerald-900/30 p-5 text-emerald-400 font-mono text-sm focus:outline-none focus:border-emerald-500 transition-all placeholder:text-emerald-950 shadow-[inset_0_0_30px_rgba(0,0,0,1)] uppercase tracking-[0.2em]"
+                      disabled={isSubmitting}
+                  />
+                  <button type="submit" className="px-12 bg-emerald-600 text-black font-black uppercase text-xs tracking-[0.25em] hover:bg-white hover:shadow-[0_0_30px_#fff] transition-all disabled:opacity-20 rounded-sm" disabled={isSubmitting || !flagValue.trim()}>
+                    {isSubmitting ? 'VERIFYING...' : 'EXTRACT'}
+                  </button>
+                </div>
+                {result && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`p-4 text-[11px] font-black uppercase tracking-[0.3em] border flex items-center gap-3 ${result.correct ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400' : 'bg-red-500/10 border-red-500 text-red-500'}`}>
+                    {result.correct ? <CheckCircle2 size={16}/> : <AlertTriangle size={16}/>}
+                    &gt; {result.correct ? `CREDITS_ESTABLISHED: +${result.points} XP` : `ERROR: ${result.message}`}
+                  </motion.div>
+                )}
+              </form>
+            ) : (
+              <div className="flex items-center gap-4 text-emerald-500 font-black text-sm uppercase tracking-[0.4em] bg-emerald-500/10 p-6 rounded border border-emerald-500/30">
+                <Unlock size={20} className="animate-pulse" /> DATA_NODE_EXTRACTED
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 
   const renderReportUpload = () => {
     const totalVulns = machine.vulnerabilities?.length || machine.modules?.length || 0;
-    const solvedCount = solvedVulns.length;
-    const isFullySolved = solvedCount === totalVulns && totalVulns > 0;
-
-    if (!isFullySolved) {
-      return (
-        <div className="report-upload-locked">
-          <div className="lock-icon">🔒</div>
-          <p>Lab report upload will be unlocked after capturing all {totalVulns} flags</p>
-          <p className="lock-progress">{solvedCount}/{totalVulns} flags captured</p>
-        </div>
-      );
-    }
-
+    const isFullySolved = solvedVulns.length === totalVulns && totalVulns > 0;
     return (
-      <div className="report-upload">
-        <h3>📄 Upload Lab Report</h3>
-        <p className="hint">Upload your detailed lab report (PDF, Markdown, or Text file)</p>
-        <form onSubmit={handleReportUpload}>
-          <input
-            type="file"
-            accept=".pdf,.md,.txt"
-            onChange={(e) => setReportFile(e.target.files[0])}
-            className="file-input"
-            disabled={uploadingReport}
-          />
-          <button 
-            type="submit" 
-            className="btn-upload-report"
-            disabled={uploadingReport || !reportFile}
-          >
-            {uploadingReport ? '⏳ Uploading...' : '📤 Upload Report'}
-          </button>
-        </form>
-        {reportFile && (
-          <p className="file-info">Selected: {reportFile.name} ({(reportFile.size / 1024).toFixed(2)} KB)</p>
+      <footer className={`mt-10 p-10 border rounded-sm relative overflow-hidden ${!isFullySolved ? 'bg-black/40 border-white/5 opacity-50' : 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.1)]'}`}>
+        {!isFullySolved ? (
+          <div className="flex items-center justify-center gap-4 text-zinc-700 font-black uppercase text-[11px] tracking-[0.5em] italic">
+            <Lock size={18} className="opacity-20"/> ACCESS_DENIED // CAPTURE_REQUIRED ({solvedVulns.length}/{totalVulns})
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row justify-between items-center gap-10 relative z-10">
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter glow-text flex items-center gap-3">DEBRIEF_PROTOCOL</h3>
+              <p className="text-[11px] text-emerald-800 font-black uppercase tracking-widest pl-1 italic">SUBMIT_FINDINGS_FOR_VALIDATION</p>
+            </div>
+            <form onSubmit={handleReportUpload} className="flex gap-4">
+              <input type="file" accept=".pdf,.md,.txt" onChange={(e) => setReportFile(e.target.files[0])} className="hidden" id="report-file"/>
+              <label htmlFor="report-file" className="px-8 py-4 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer font-black uppercase text-[11px] tracking-[0.2em] rounded-sm bg-black italic">
+                {reportFile ? reportFile.name : 'UPLOAD_FILES...'}
+              </label>
+              <button type="submit" disabled={uploadingReport || !reportFile} className="px-10 bg-emerald-500 text-black font-black uppercase text-[11px] tracking-[0.2em] hover:bg-white hover:shadow-[0_0_30px_#fff] transition-all disabled:opacity-20 rounded-sm">
+                {uploadingReport ? 'SENDING...' : 'PUSH_REPORTS'}
+              </button>
+            </form>
+          </div>
         )}
-      </div>
+      </footer>
     );
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Loading machine...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={() => navigate('/my-machines')} className="btn-back">
-          ← Back to My Machines
-        </button>
-      </div>
-    );
-  }
-
-  if (!machine || machine.status === 'building') {
-    return (
-      <div className="building-status">
-        <div className="spinner"></div>
-        <h2>Machine is being prepared...</h2>
-        <p>Your machine is starting up. This usually takes a few moments.</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="h-screen bg-black flex flex-col items-center justify-center text-emerald-500 font-mono relative overflow-hidden">
+        <div className="w-80 h-1 bg-white/5 mb-8 rounded-full overflow-hidden border border-white/10 relative z-10">
+            <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} className="w-1/2 h-full bg-emerald-500 shadow-[0_0_20px_#10b981]" />
+        </div>
+        <p className="text-[11px] font-black tracking-[0.8em] animate-pulse relative z-10 uppercase glow-text">Establishing_Neural_Sync</p>
+    </div>
+  );
 
   return (
-    <div className="machine-solver">
-      {renderLabHeader()}
-
-      {/* Solutions View - show when toggled (either after solving or when seeking help) */}
-      {showSolutions && (
-        <div className="solutions-section">
-          <h2 className="solutions-title">📚 Solutions & Walkthrough</h2>
-          <p className="solutions-subtitle">Machine-specific step-by-step guides with actual flags</p>
-          {machine.vulnerabilities && machine.vulnerabilities.map((vuln, idx) => {
-            // Find if this specific instance is solved using vulnerabilityInstanceId
-            const isSolved = solvedVulns.some(v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId);
-            
-            // Get machine-specific solution from backend (array-based response)
-            const solution = machineSolutions?.find(s => s.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId) || {};
-            
-            // Fallback to generic solution if machine-specific not available
-            const objective = solution.explanation || getSolutionObjective(vuln.moduleId);
-            const steps = solution.steps || getSolutionSteps(vuln.moduleId);
-            const concepts = solution.hints || getSolutionConcepts(vuln.moduleId);
-            const actualFlag = solution.flag;  // Real flag from THIS instance
-
-            return (
-              <div key={vuln.vulnerabilityInstanceId} className={`solution-card ${isSolved ? 'solved' : 'unsolved'}`}>
-                <div className="solution-header">
-                  <h3>{isSolved ? '✓' : '🔓'} {vuln.moduleId.replace(/_/g, ' ')}</h3>
-                  <span className="solution-points">{vuln.points} points</span>
-                  {isSolved && <span className="solved-badge">COMPLETED</span>}
-                </div>
-                <div className="solution-content">
-                  <div className="solution-section">
-                    <h4>🎯 Objective</h4>
-                    <p>{objective}</p>
-                  </div>
-                  <div className="solution-section">
-                    <h4>🔍 Steps to Solve</h4>
-                    <ol>
-                      {steps.map((step, i) => (
-                        <li key={i}>{step}</li>
-                      ))}
-                    </ol>
-                  </div>
-                  {solution.payload && (
-                    <div className="solution-section">
-                      <h4>💻 Payload Example</h4>
-                      <code className="flag-display">{solution.payload}</code>
-                    </div>
-                  )}
-                  <div className="solution-section">
-                    <h4>💡 Key Concepts & Hints</h4>
-                    <ul>
-                      {concepts.map((concept, i) => (
-                        <li key={i}>{concept}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  {isSolved && actualFlag && (
-                    <div className="solution-section">
-                      <h4>🚩 Flag (Captured)</h4>
-                      <code className="flag-display">{actualFlag}</code>
-                    </div>
-                  )}
-                  {!isSolved && (
-                    <div className="solution-section hint-section">
-                      <h4>💡 Hint</h4>
-                      <p>Use the steps above to find and capture the flag. The actual flag for THIS vulnerability instance will be revealed here once you solve it.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Help Section - View Solutions Button (Always Available) */}
-      <div className="help-section">
-        <button 
-          onClick={() => {
-            setShowSolutions(!showSolutions);
-            if (!showSolutions && !machineSolutions) {
-              fetchMachineSolutions();  // Fetch when first opened
-            }
-          }}
-          className="btn-view-solutions"
-          title="Get help with solving this lab"
-        >
-          {showSolutions ? '🔼 Hide Walkthrough' : '💡 Need Help? View Solution Walkthrough'}
-        </button>
-        <p className="help-text">
-          {showSolutions 
-            ? 'Machine-specific solutions displayed above. These are the ACTUAL steps and flags for THIS lab!'
-            : 'Stuck? Click above to view detailed solutions, payloads, and hints specific to THIS machine.'}
-        </p>
-      </div>
-      
-      <div className="lab-workspace">
-        {renderTabBar()}
+    <div className="min-h-screen bg-black text-white font-mono selection:bg-emerald-500 selection:text-black relative">
+      <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] [background:linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] [background-size:100%_2px,3px_100%]"></div>
+      <div className="flex flex-col xl:flex-row h-screen overflow-hidden relative">
         
-        <div className="tab-content-area">
-          {activeTab === 'browser' && renderBrowserTab()}
-          {activeTab === 'terminal' && renderTerminalTab()}
-          {activeTab === 'files' && renderFilesTab()}
-          {activeTab === 'flags' && renderFlagsTab()}
-        </div>
+        <aside className="w-full xl:w-[480px] bg-[#020202] border-r border-emerald-500/20 p-12 overflow-y-auto custom-scrollbar flex flex-col relative z-30 shadow-[40px_0_100px_rgba(0,0,0,1)]">
+          <div className="absolute left-0 top-0 h-full w-[1px] bg-emerald-500/20 shadow-[0_0_15px_#10b981]" />
+          
+          {renderLabHeader()}
+          
+          <div className="mt-12 space-y-6">
+            <button 
+              onClick={() => { setShowSolutions(!showSolutions); if (!showSolutions) fetchMachineSolutions(); }}
+              className={`w-full group relative flex items-center justify-center gap-4 p-5 font-black uppercase text-[11px] tracking-[0.3em] transition-all border-2 overflow-hidden
+                ${showSolutions ? 'bg-emerald-500 text-black border-white shadow-[0_0_40px_#10b981]' : 'bg-[#080808] text-emerald-500 border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]'}`}
+            >
+              <Lightbulb size={20} className={showSolutions ? '' : 'animate-pulse'}/> 
+              {showSolutions ? 'DISCONNECT_INTEL' : 'NEURAL_HINT_LINK'}
+              <div className="absolute inset-0 bg-white/5 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            </button>
+          </div>
+
+          <div className="mt-auto pt-10 border-t border-white/5 flex flex-col gap-6">
+             <button onClick={() => navigate('/my-machines')} className="group flex items-center gap-6 text-emerald-950 hover:text-emerald-400 font-black transition-all text-[11px] tracking-[0.4em] uppercase italic">
+               <div className="p-4 bg-black border border-zinc-900 group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all rounded-sm">
+                <Power size={20} />
+               </div>
+               TERMINATE_SESSION
+             </button>
+             <div className="flex items-center gap-3 pl-1">
+                <div className="flex gap-1">
+                    {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-emerald-900 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />)}
+                </div>
+                <span className="text-[9px] text-emerald-950 font-black tracking-[0.3em] uppercase">Status: Core_Operational</span>
+             </div>
+          </div>
+        </aside>
+
+        <main className="flex-1 flex flex-col bg-black relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none [background-image:linear-gradient(to_right,#10b981_1px,transparent_1px),linear-gradient(to_bottom,#10b981_1px,transparent_1px)] [background-size:80px_80px]"></div>
+          
+          <AnimatePresence>
+            {showSolutions && (
+              <motion.div initial={{ opacity: 0, x: 200 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 200 }} transition={{ type: "spring", damping: 25 }} className="absolute inset-0 z-50 bg-[#020202]/98 backdrop-blur-3xl p-20 overflow-y-auto custom-scrollbar border-l border-emerald-500/20">
+                <div className="flex justify-between items-center mb-20 border-b border-emerald-500/10 pb-12">
+                  <div className="space-y-4">
+                    <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase glow-text decoration-emerald-500 decoration-8 underline-offset-[16px] underline">INTEL_RECOVERY</h2>
+                    <div className="flex gap-4 items-center">
+                        <Activity size={16} className="text-emerald-500" />
+                        <p className="text-[11px] font-black text-emerald-800 tracking-[0.6em] uppercase italic">Decrypting Central Intelligence Bank Assets...</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowSolutions(false)} className="p-5 bg-white/5 hover:bg-red-500/20 transition-all text-emerald-500 hover:text-red-500 border border-white/5 rounded-sm shadow-2xl"><X size={40}/></button>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  {machine.vulnerabilities?.map((vuln, idx) => {
+                    const isSolved = solvedVulns.some(v => v.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId);
+                    const solution = machineSolutions?.find(s => s.vulnerabilityInstanceId === vuln.vulnerabilityInstanceId) || {};
+                    return (
+                      <div key={idx} className={`p-12 border-2 transition-all duration-700 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)]
+                        ${isSolved ? 'border-emerald-500/30 bg-emerald-500/5 shadow-[0_0_40px_rgba(16,185,129,0.05)]' : 'border-white/5 bg-zinc-950/40'}`}>
+                        <div className="flex items-center justify-between mb-10">
+                            <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter glow-text underline decoration-emerald-900 decoration-2 underline-offset-4">{vuln.moduleId.replace(/_/g, ' ')}</h3>
+                            <span className={`text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded border-2
+                                ${isSolved ? 'bg-emerald-500 text-black border-white shadow-[0_0_25px_#10b981]' : 'text-zinc-800 border-zinc-900'}`}>{isSolved ? 'CAPTURED' : 'LOCKED'}</span>
+                        </div>
+                        <div className="space-y-10">
+                            <div className="space-y-4">
+                                <h4 className="text-[11px] font-black text-emerald-900 uppercase tracking-[0.5em] flex items-center gap-2 italic">0x01 // INFILTRATION_STRATEGY</h4>
+                                <ol className="text-[13px] text-zinc-400 space-y-5 list-decimal list-inside leading-relaxed border-l-2 border-emerald-900/20 ml-2 italic">{(solution.steps || getSolutionSteps(vuln.moduleId)).map((s, i) => <li key={i} className="pl-6">{s}</li>)}</ol>
+                            </div>
+                            {isSolved && solution.flag && (
+                                <div className="p-8 bg-black border-2 border-emerald-500/20 space-y-4 shadow-[inset_0_0_30px_rgba(0,0,0,1)] relative">
+                                    <div className="absolute top-2 right-4 opacity-5 rotate-12"><Flag size={50}/></div>
+                                    <label className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.5em] block">RECOVERED_SECRET_BLOCK</label>
+                                    <code className="text-lg font-black text-white block break-all font-mono glow-text p-4 bg-emerald-500/5 border border-emerald-500/10 tracking-widest">{solution.flag}</code>
+                                </div>
+                            )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <section className="flex-1 flex flex-col overflow-hidden relative z-10 p-12">
+            <div className="max-w-[1500px] mx-auto w-full h-full flex flex-col">
+                {renderTabBar()}
+                <div className="flex-1 overflow-y-auto custom-scrollbar pt-12">
+                    <AnimatePresence mode="wait">
+                        <motion.div key={activeTab} initial={{ opacity: 0, scale: 0.99, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.99, y: -10 }} transition={{ duration: 0.3 }} className="h-full">
+                            {activeTab === 'browser' && renderBrowserTab()}
+                            {activeTab === 'terminal' && renderTerminalTab()}
+                            {activeTab === 'files' && renderFilesTab()}
+                            {activeTab === 'flags' && renderFlagsTab()}
+                        </motion.div>
+                    </AnimatePresence>
+                    {renderReportUpload()}
+                </div>
+            </div>
+          </section>
+        </main>
       </div>
 
-      {renderReportUpload()}
-
-      <div className="lab-footer">
-        <button onClick={() => navigate('/my-machines')} className="btn-back">
-          ← Back to My Machines
-        </button>
-      </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #000; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #080808; border-radius: 20px; border: 1px solid #111; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #10b981; box-shadow: 0 0 15px #10b981; }
+        .glow-text { text-shadow: 0 0 12px rgba(16, 185, 129, 0.7), 0 0 24px rgba(16, 185, 129, 0.3); }
+        .animate-spin-slow { animation: spin 8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };

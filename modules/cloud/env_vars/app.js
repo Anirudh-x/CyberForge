@@ -1,5 +1,5 @@
 const express = require('express');
-const app = express();
+const router = express.Router();
 const PORT = 3000;
 
 // Exposed environment variables (simulated)
@@ -19,10 +19,10 @@ const exposedEnv = {
   ENCRYPTION_KEY: 'aes-256-key-sensitive'
 };
 
-app.use(express.json());
+router.use(express.json());
 
 // Landing page
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -118,7 +118,7 @@ app.get('/', (req, res) => {
 });
 
 // API: Health check
-app.get('/api/health', (req, res) => {
+router.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     environment: exposedEnv.NODE_ENV,
@@ -127,7 +127,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API: Config (safe)
-app.get('/api/config', (req, res) => {
+router.get('/api/config', (req, res) => {
   res.json({
     appName: 'CyberForge Cloud App',
     version: '2.0.1',
@@ -141,7 +141,7 @@ app.get('/api/config', (req, res) => {
 });
 
 // API: Environment variables (EXPOSED - misconfiguration!)
-app.get('/api/env', (req, res) => {
+router.get('/api/env', (req, res) => {
   // This should be protected but isn't!
   res.json({
     message: 'Environment variables',
@@ -150,7 +150,7 @@ app.get('/api/env', (req, res) => {
 });
 
 // API: Debug endpoint (should only work in development)
-app.get('/api/debug/vars', (req, res) => {
+router.get('/api/debug/vars', (req, res) => {
   // Misconfiguration: Debug endpoint left enabled in production
   res.json({
     warning: 'This endpoint should not be accessible in production!',
@@ -164,7 +164,7 @@ app.get('/api/debug/vars', (req, res) => {
 });
 
 // API: Simulate a secure endpoint
-app.get('/api/secure/data', (req, res) => {
+router.get('/api/secure/data', (req, res) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || authHeader !== `Bearer ${exposedEnv.API_KEY}`) {
@@ -177,6 +177,4 @@ app.get('/api/secure/data', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Environment Variables lab running on port ${PORT}`);
-});
+module.exports = router;

@@ -9,9 +9,15 @@ const router = express.Router();
 
 // Helper function to generate unique vulnerability instance ID
 const generateVulnInstanceId = (machineId, moduleId, index) => {
+  if (!machineId || !moduleId || index === undefined) {
+    console.error('❌ Invalid parameters for generateVulnInstanceId:', { machineId, moduleId, index });
+    throw new Error('Missing required parameters for vulnerability instance ID generation');
+  }
   const timestamp = Date.now();
   const random = crypto.randomBytes(8).toString('hex');
-  return `${machineId}-${moduleId}-${index}-${timestamp}-${random}`;
+  const instanceId = `${machineId}-${moduleId}-${index}-${timestamp}-${random}`;
+  console.log(`✓ Generated instance ID: ${instanceId}`);
+  return instanceId;
 };
 
 // Helper function to generate unique flag for each vulnerability instance
@@ -52,6 +58,7 @@ router.post('/create', authMiddleware, async (req, res) => {
     
     // Pre-generate machineId for vulnerability instance IDs
     const tempMachineId = new mongoose.Types.ObjectId().toString();
+    console.log(`🆔 Generated temp machine ID: ${tempMachineId}`);
 
     for (let i = 0; i < modules.length; i++) {
       const moduleId = modules[i];
@@ -60,17 +67,20 @@ router.post('/create', authMiddleware, async (req, res) => {
         if (metadata && metadata.points) {
           totalPoints += metadata.points;
           
-          // Generate UNIQUE instance ID and flag for THIS vulnerability instance
+          // Generate unique instance ID but use metadata flag (hardcoded)
           const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, moduleId, i);
-          const uniqueFlag = generateUniqueFlag(moduleId, tempMachineId);
           
-          // Add vulnerability with unique instance ID and flag
+          console.log(`🔍 Creating vulnerability for ${moduleId}:`);
+          console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
+          console.log(`   Flag from metadata: ${metadata.flag}`);
+          
+          // Add vulnerability with unique instance ID and METADATA FLAG (hardcoded)
           vulnerabilities.push({
             vulnerabilityInstanceId: vulnerabilityInstanceId,
             moduleId: moduleId,
             route: metadata.route || `/${moduleId}`,
             points: metadata.points,
-            flag: uniqueFlag,  // UNIQUE flag for this instance
+            flag: metadata.flag,  // Use hardcoded flag from metadata.json
             difficulty: metadata.difficulty || 'medium',
             solvedBy: []
           });

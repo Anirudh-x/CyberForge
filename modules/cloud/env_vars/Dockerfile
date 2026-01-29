@@ -5,7 +5,8 @@ WORKDIR /app
 RUN npm install express
 
 COPY app.js .
+COPY server.js .
 
 EXPOSE 3000
 
-CMD ["node", "app.js"]
+CMD ["node", "server.js"]
