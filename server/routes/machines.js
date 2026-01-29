@@ -55,6 +55,16 @@ router.post('/create', authMiddleware, async (req, res) => {
     let totalPoints = 0;
     const vulnerabilities = [];
     const solutions = new Map();
+
+    // Default points if a module's metadata.json is missing it
+    const getDefaultPoints = (metadata) => {
+      const difficulty = metadata?.difficulty || 'medium';
+      switch (difficulty) {
+        case 'low': return 50;
+        case 'high': return 90;
+        default: return 70; // medium
+      }
+    };
     
     // Pre-generate machineId for vulnerability instance IDs
     const tempMachineId = new mongoose.Types.ObjectId().toString();
@@ -64,45 +74,50 @@ router.post('/create', authMiddleware, async (req, res) => {
       const moduleId = modules[i];
       try {
         const metadata = await getModuleMetadata(domain, moduleId);
-        if (metadata && metadata.points) {
-          totalPoints += metadata.points;
-          
-          // Generate unique instance ID but use metadata flag (hardcoded)
-          const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, moduleId, i);
-          
-          console.log(`🔍 Creating vulnerability for ${moduleId}:`);
-          console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
-          console.log(`   Flag from metadata: ${metadata.flag}`);
-          
-          // Add vulnerability with unique instance ID and METADATA FLAG (hardcoded)
-          vulnerabilities.push({
-            vulnerabilityInstanceId: vulnerabilityInstanceId,
-            moduleId: moduleId,
-            route: metadata.route || `/${moduleId}`,
-            points: metadata.points,
-            flag: metadata.flag,  // Use hardcoded flag from metadata.json
-            difficulty: metadata.difficulty || 'medium',
-            solvedBy: []
-          });
-          
-          // Store solution keyed by vulnerabilityInstanceId (NOT moduleId)
-          // This ensures each instance has its own solution data
-          solutions.set(vulnerabilityInstanceId, {
-            explanation: metadata.solution?.explanation || `Exploit the ${moduleId.replace(/_/g, ' ')} vulnerability to capture the flag.`,
-            steps: metadata.solution?.steps || [
-              `Navigate to ${metadata.route || '/' + moduleId}`,
-              `Identify the ${moduleId.replace(/_/g, ' ')} vulnerability`,
-              `Craft your exploit payload`,
-              `Execute the attack and capture the flag`
-            ],
-            payload: metadata.solution?.payload || 'Payload varies based on implementation',
-            hints: metadata.solution?.hints || [
-              `Look for input fields`,
-              `Try common ${moduleId.replace(/_/g, ' ')} payloads`,
-              `Check the response carefully`
-            ]
-          });
+        if (!metadata) {
+          // Metadata missing means this module cannot be deployed correctly
+          console.error(`❌ Metadata not found for ${domain}/${moduleId}`);
+          continue;
         }
+
+        const points = Number.isFinite(metadata.points) ? metadata.points : getDefaultPoints(metadata);
+        totalPoints += points;
+
+        // Generate unique instance ID
+        const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, moduleId, i);
+
+        console.log(`🔍 Creating vulnerability for ${moduleId}:`);
+        console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
+        console.log(`   Points: ${points} (${metadata.points ?? 'defaulted'})`);
+        console.log(`   Flag from metadata: ${metadata.flag}`);
+
+        // Add vulnerability with unique instance ID (flag comes from metadata.json)
+        vulnerabilities.push({
+          vulnerabilityInstanceId,
+          moduleId,
+          route: metadata.route || `/${moduleId}`,
+          points,
+          flag: metadata.flag || generateUniqueFlag(moduleId, tempMachineId),
+          difficulty: metadata.difficulty || 'medium',
+          solvedBy: []
+        });
+
+        // Store solution keyed by vulnerabilityInstanceId (NOT moduleId)
+        solutions.set(vulnerabilityInstanceId, {
+          explanation: metadata.solution?.explanation || `Exploit the ${moduleId.replace(/_/g, ' ')} vulnerability to capture the flag.`,
+          steps: metadata.solution?.steps || [
+            `Navigate to ${metadata.route || '/' + moduleId}`,
+            `Identify the ${moduleId.replace(/_/g, ' ')} vulnerability`,
+            `Craft your exploit payload`,
+            `Execute the attack and capture the flag`
+          ],
+          payload: metadata.solution?.payload || 'Payload varies based on implementation',
+          hints: metadata.solution?.hints || metadata.hints || [
+            `Look for input fields`,
+            `Try common ${moduleId.replace(/_/g, ' ')} payloads`,
+            `Check the response carefully`
+          ]
+        });
       } catch (error) {
         console.error(`Error loading metadata for ${moduleId}:`, error);
       }

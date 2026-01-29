@@ -147,15 +147,30 @@ export const deployMachine = async (machineId, domain, modules) => {
       modulesMetadata.push({ moduleId, ...metadata });
     }
     
-    // For multi-vulnerability labs, we need to build a combined container
-    // that includes ALL vulnerability routes together
-    // Strategy: Use the first module as base, but ensure all routes are exposed
+    // Decide which module folder to use for the actual Docker image.
+    // For some combinations (e.g., SQL + XSS), we use a dedicated combo folder
+    // that exposes multiple vulnerabilities inside a single container.
+    let deploymentModuleId = modules[0];
+    let deploymentMetadata = modulesMetadata[0];
+
+    if (domain === 'web') {
+      const comboKey = [...modules].sort().join('+');
+      const webCombos = {
+        'sql_injection+xss': 'sql_xss_combo',
+      };
+      const comboId = webCombos[comboKey];
+      if (comboId) {
+        const comboMetadata = await getModuleMetadata(domain, comboId);
+        if (comboMetadata) {
+          console.log(`Using combo deployment module "${comboId}" for modules: ${comboKey}`);
+          deploymentModuleId = comboId;
+          deploymentMetadata = { moduleId: comboId, ...comboMetadata };
+        }
+      }
+    }
     
-    const primaryModule = modules[0];
-    const primaryMetadata = modulesMetadata[0];
-    
-    // Build Docker image for primary module
-    const buildResult = await buildDockerImage(domain, primaryModule);
+    // Build Docker image for chosen deployment module
+    const buildResult = await buildDockerImage(domain, deploymentModuleId);
     if (!buildResult.success) {
       throw new Error(`Failed to build image: ${buildResult.error}`);
     }
@@ -165,7 +180,7 @@ export const deployMachine = async (machineId, domain, modules) => {
     
     // Run container with ALL modules' environment
     const containerName = `cyberforge-${machineId}`;
-    const containerPort = primaryMetadata.port || 3000;
+    const containerPort = deploymentMetadata.port || 3000;
     
     console.log(`Starting container ${containerName} on port ${port} (internal: ${containerPort})`);
     
@@ -187,8 +202,8 @@ export const deployMachine = async (machineId, domain, modules) => {
       downloads: []
     };
     
-    // Use primary module's solve method
-    switch (primaryMetadata.solve_method) {
+    // Use deployment module's solve method
+    switch (deploymentMetadata.solve_method) {
       case 'gui':
       case 'api':
         access.url = `http://localhost:${port}`;
@@ -224,7 +239,7 @@ export const deployMachine = async (machineId, domain, modules) => {
       containerId: runResult.containerId,
       imageName: buildResult.imageName,
       port,
-      solveMethod: primaryMetadata.solve_method,
+      solveMethod: deploymentMetadata.solve_method,
       access,
       vulnerabilityRoutes,  // NEW: Return all routes for frontend
       modulesDeployed: modules.length

@@ -53,15 +53,23 @@ export default function MachineBuilder() {
     if (over && over.id === 'machine-canvas') {
       const moduleId = active.id;
       const module = modulesByDomain[selectedDomain]?.find(m => m.id === moduleId);
-      if (module && !selectedModules.find(m => m.id === module.id)) {
-        setSelectedModules([...selectedModules, module]);
+      if (!module) {
+        setActiveModule(null);
+        return;
       }
+
+      // IMPORTANT: functional update prevents dropping multiple modules
+      // from losing earlier selections due to stale state closures.
+      setSelectedModules((prev) => {
+        if (prev.some((m) => m.id === module.id)) return prev;
+        return [...prev, module];
+      });
     }
     setActiveModule(null);
   };
 
   const handleRemoveModule = (moduleId) => {
-    setSelectedModules(selectedModules.filter(m => m.id !== moduleId));
+    setSelectedModules((prev) => prev.filter((m) => m.id !== moduleId));
   };
 
   const handleCreateMachine = async () => {

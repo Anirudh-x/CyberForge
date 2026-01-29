@@ -7,7 +7,7 @@ import Challenges from './pages/Challenges';
 import Leaderboard from './pages/Leaderboard';
 import MachineBuilder from './pages/MachineBuilder';
 import MyMachines from './pages/MyMachines';
-import MachineSolver from './pages/MachineSolver';
+import MachineSolver from './pages/MachineSolverNew';
 
 function App() {
   return (

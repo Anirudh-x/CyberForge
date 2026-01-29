@@ -1,0 +1,10 @@
+{
+  "id": "sql_xss_combo",
+  "name": "SQL Injection + XSS Combo Lab",
+  "domain": "web",
+  "difficulty": "medium",
+  "description": "Combined web lab exposing both SQL injection and XSS vulnerabilities in a single container.",
+  "solve_method": "gui",
+  "port": 3000
+}
+

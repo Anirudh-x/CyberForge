@@ -13,24 +13,20 @@ export const modulesByDomain = {
     { id: 'sql_injection', name: 'SQL Injection', description: 'Database query manipulation', difficulty: 'medium', points: 75 },
     { id: 'xss', name: 'Cross-Site Scripting (XSS)', description: 'Client-side code injection', difficulty: 'medium', points: 65 },
     { id: 'csrf', name: 'CSRF', description: 'Cross-Site Request Forgery', difficulty: 'medium', points: 70 },
-    { id: 'file_upload', name: 'File Upload Vulnerability', description: 'Insecure file handling', difficulty: 'high', points: 90 },
     { id: 'auth_bypass', name: 'Authentication Bypass', description: 'Broken authentication', difficulty: 'high', points: 95 }
   ],
   red_team: [
     { id: 'weak_ssh', name: 'Weak SSH Credentials', description: 'Brute-forceable SSH', difficulty: 'low', points: 50 },
-    { id: 'exposed_services', name: 'Exposed Services', description: 'Misconfigured network services', difficulty: 'medium', points: 70 },
-    { id: 'privesc', name: 'Privilege Escalation', description: 'Local privilege escalation', difficulty: 'high', points: 100 },
-    { id: 'cron_jobs', name: 'Insecure Cron Jobs', description: 'Misconfigured scheduled tasks', difficulty: 'medium', points: 75 }
+    { id: 'privilege_escalation', name: 'Privilege Escalation', description: 'Escalate privileges to root/admin', difficulty: 'high', points: 100 }
   ],
   blue_team: [
-    { id: 'log_analysis', name: 'Log Analysis Challenge', description: 'Detect intrusions from logs', difficulty: 'medium', points: 70 },
-    { id: 'malware_detection', name: 'Malware Detection', description: 'Identify malicious software', difficulty: 'high', points: 90 },
-    { id: 'siem_alert', name: 'SIEM Alert Investigation', description: 'Analyze security alerts', difficulty: 'medium', points: 75 }
+    { id: 'log_analysis', name: 'Log Analysis Challenge', description: 'Detect intrusions from logs', difficulty: 'medium', points: 70 }
   ],
   cloud: [
     { id: 'public_bucket', name: 'Public Storage Bucket', description: 'Exposed cloud storage', difficulty: 'low', points: 50 },
     { id: 'iam_policy', name: 'Misconfigured IAM Policy', description: 'Excessive permissions', difficulty: 'medium', points: 75 },
-    { id: 'env_vars', name: 'Exposed Environment Variables', description: 'Leaked credentials', difficulty: 'low', points: 60 }
+    { id: 'env_vars', name: 'Exposed Environment Variables', description: 'Leaked credentials', difficulty: 'low', points: 60 },
+    { id: 'exposed_secrets', name: 'Exposed Secrets', description: 'Secrets leaked in app/config', difficulty: 'medium', points: 70 }
   ],
   forensics: [
     { id: 'memory_dump', name: 'Memory Dump Analysis', description: 'Analyze RAM dump', difficulty: 'high', points: 80 },
