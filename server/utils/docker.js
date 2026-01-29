@@ -3,28 +3,54 @@ import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import process from 'process';
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Detect if running on Windows
+const isWindows = process.platform === 'win32';
+
 // Get available port for machine
 let currentPort = 8000;
 export const getAvailablePort = async () => {
   const maxAttempts = 100;
-  
+
   for (let i = 0; i < maxAttempts; i++) {
     const port = currentPort++;
+
     try {
-      // Check if port is available using lsof
-      await execAsync(`lsof -i :${port}`);
-      // If lsof succeeds, port is in use, try next
+      if (isWindows) {
+        // On Windows, use netstat to check if port is in use
+        const { stdout } = await execAsync(`netstat -ano | findstr :${port}`);
+        // If netstat finds something, port is in use, try next
+        if (stdout.trim()) {
+          continue;
+        }
+      } else {
+        // On Linux/Mac, use lsof
+        await execAsync(`lsof -i :${port}`);
+        // If lsof succeeds, port is in use, try next
+        continue;
+      }
     } catch (error) {
-      // lsof fails (exit code 1) when port is free
-      return port;
+      // Command fails when port is free (lsof exit 1, or netstat finds nothing)
     }
+
+    // Also check Docker specifically for allocated ports
+    try {
+      const { stdout } = await execAsync(`docker ps --format "{{.Ports}}" | findstr ":${port}->"`);
+      if (stdout.trim()) {
+        continue; // Port is used by Docker container
+      }
+    } catch (error) {
+      // No Docker container using this port
+    }
+
+    return port;
   }
-  
+
   throw new Error('No available ports found');
 };
 
@@ -32,22 +58,22 @@ export const getAvailablePort = async () => {
 export const buildDockerImage = async (domain, moduleId) => {
   const modulePath = path.join(__dirname, '..', '..', 'modules', domain, moduleId);
   const imageName = `cyberforge-${domain}-${moduleId}:latest`;
-  
+
   try {
     // Check if module exists
     await fs.access(modulePath);
-    
+
     console.log(`Building Docker image: ${imageName}`);
     console.log(`Module path: ${modulePath}`);
-    
+
     const { stdout, stderr } = await execAsync(
       `docker build -t ${imageName} ${modulePath}`
     );
-    
+
     if (stderr && !stderr.includes('WARNING')) {
       console.error('Docker build stderr:', stderr);
     }
-    
+
     console.log(`Successfully built image: ${imageName}`);
     return { success: true, imageName };
   } catch (error) {
@@ -60,28 +86,30 @@ export const buildDockerImage = async (domain, moduleId) => {
 export const runDockerContainer = async (imageName, port, containerName, containerPort = 3000) => {
   try {
     console.log(`Running container: ${containerName} on port ${port} (internal: ${containerPort})`);
-    
+
     const { stdout } = await execAsync(
       `docker run -d --name ${containerName} -p ${port}:${containerPort} ${imageName}`
     );
-    
+
     const containerId = stdout.trim();
     console.log(`Container started: ${containerId}`);
-    
+
     // Wait a bit for container to start
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Check if container is running
+    // Use double quotes for Windows compatibility (single quotes are included literally on Windows)
+    const formatArg = isWindows ? '"{{.State.Running}}"' : "'{{.State.Running}}'";
     const { stdout: inspectOutput } = await execAsync(
-      `docker inspect --format='{{.State.Running}}' ${containerId}`
+      `docker inspect --format=${formatArg} ${containerId}`
     );
-    
-    const isRunning = inspectOutput.trim() === 'true';
-    
+
+    const isRunning = inspectOutput.trim().replace(/['"]/g, '') === 'true';
+
     if (!isRunning) {
       throw new Error('Container failed to start');
     }
-    
+
     return {
       success: true,
       containerId,
@@ -118,7 +146,7 @@ export const getModuleMetadata = async (domain, moduleId) => {
       moduleId,
       'metadata.json'
     );
-    
+
     const data = await fs.readFile(metadataPath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
@@ -132,11 +160,11 @@ export const deployMachine = async (machineId, domain, modules) => {
   try {
     console.log(`\n🚀 Deploying machine ${machineId} with ${modules.length} vulnerabilities`);
     console.log(`Domain: ${domain}, Modules: ${modules.join(', ')}`);
-    
-    
+
+
     // CRITICAL FIX: Deploy ALL modules together in one container
     // NOT just the first one - all vulnerabilities must co-exist
-    
+
     // Get metadata for all modules to validate
     const modulesMetadata = [];
     for (const moduleId of modules) {
@@ -146,47 +174,47 @@ export const deployMachine = async (machineId, domain, modules) => {
       }
       modulesMetadata.push({ moduleId, ...metadata });
     }
-    
+
     // For multi-vulnerability labs, we need to build a combined container
     // that includes ALL vulnerability routes together
     // Strategy: Use the first module as base, but ensure all routes are exposed
-    
+
     const primaryModule = modules[0];
     const primaryMetadata = modulesMetadata[0];
-    
+
     // Build Docker image for primary module
     const buildResult = await buildDockerImage(domain, primaryModule);
     if (!buildResult.success) {
       throw new Error(`Failed to build image: ${buildResult.error}`);
     }
-    
+
     // Get available port
     const port = await getAvailablePort();
-    
+
     // Run container with ALL modules' environment
     const containerName = `cyberforge-${machineId}`;
     const containerPort = primaryMetadata.port || 3000;
-    
+
     console.log(`Starting container ${containerName} on port ${port} (internal: ${containerPort})`);
-    
+
     const runResult = await runDockerContainer(
       buildResult.imageName,
       port,
       containerName,
       containerPort
     );
-    
+
     if (!runResult.success) {
       throw new Error(`Failed to run container: ${runResult.error}`);
     }
-    
+
     // Build access details based on solve method
     const access = {
       url: null,
       terminal: null,
       downloads: []
     };
-    
+
     // Use primary module's solve method
     switch (primaryMetadata.solve_method) {
       case 'gui':
@@ -201,24 +229,24 @@ export const deployMachine = async (machineId, domain, modules) => {
         access.downloads = [`http://localhost:${port}/download`];
         break;
     }
-    
+
     console.log(`✅ Machine deployed successfully!`);
     console.log(`   Container ID: ${runResult.containerId}`);
     console.log(`   Access URL: ${access.url || access.terminal || 'N/A'}`);
     console.log(`   Modules deployed: ${modules.length}`);
-    
+
     console.log(`✅ Machine deployed successfully!`);
     console.log(`   Container ID: ${runResult.containerId}`);
     console.log(`   Access URL: ${access.url || access.terminal || 'N/A'}`);
     console.log(`   Modules deployed: ${modules.length}`);
-    
+
     // Return all vulnerability routes for verification
     const vulnerabilityRoutes = modulesMetadata.map(m => ({
       moduleId: m.moduleId,
       route: m.route || `/${m.moduleId}`,
       flag: m.flag
     }));
-    
+
     return {
       success: true,
       containerId: runResult.containerId,
