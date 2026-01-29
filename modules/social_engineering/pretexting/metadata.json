@@ -1,0 +1,25 @@
+{
+  "name": "Pretexting Scenarios",
+  "description": "Build social engineering pretexts for security testing",
+  "difficulty": "medium",
+  "points": 65,
+  "category": "social_engineering",
+  "route": "/pretexting",
+  "solve_method": "gui",
+  "flag": "FLAG{PRETEXT_MASTER_COMPLETE}",
+  "solution": {
+    "explanation": "Learn to create and recognize pretexting scenarios used in social engineering attacks.",
+    "steps": [
+      "Understand the target context and environment",
+      "Build a believable backstory for the pretext",
+      "Identify psychological triggers being exploited",
+      "Practice defensive awareness techniques"
+    ],
+    "hints": [
+      "Consider the target's role and responsibilities",
+      "Use authority and urgency appropriately",
+      "Build trust through familiarity",
+      "Always verify unusual requests through official channels"
+    ]
+  }
+}

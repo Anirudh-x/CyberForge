@@ -5,7 +5,8 @@ export const domains = [
   { id: 'red_team', name: 'Red Team', color: 'red' },
   { id: 'blue_team', name: 'Blue Team', color: 'blue' },
   { id: 'cloud', name: 'Cloud Security', color: 'cyan' },
-  { id: 'forensics', name: 'Forensics', color: 'purple' }
+  { id: 'forensics', name: 'Forensics', color: 'purple' },
+  { id: 'social_engineering', name: 'Social Engineering', color: 'yellow' }
 ];
 
 export const modulesByDomain = {
@@ -36,6 +37,12 @@ export const modulesByDomain = {
     { id: 'memory_dump', name: 'Memory Dump Analysis', description: 'Analyze RAM dump', difficulty: 'high', points: 80 },
     { id: 'disk_image', name: 'Disk Image Investigation', description: 'Forensic disk analysis', difficulty: 'high', points: 85 },
     { id: 'hidden_files', name: 'Hidden Files Challenge', description: 'Find concealed data', difficulty: 'medium', points: 70 }
+  ],
+  social_engineering: [
+    { id: 'phishing_email', name: 'Phishing Email Generator', description: 'Create realistic phishing simulations', difficulty: 'medium', points: 60 },
+    { id: 'pretexting', name: 'Pretexting Scenarios', description: 'Build social engineering pretexts', difficulty: 'medium', points: 65 },
+    { id: 'vishing', name: 'Vishing Scripts', description: 'Voice phishing call scripts', difficulty: 'high', points: 75 },
+    { id: 'spear_phishing', name: 'Spear Phishing Campaign', description: 'Targeted phishing attacks', difficulty: 'high', points: 85 }
   ]
 };
 
