@@ -47,7 +47,7 @@ npm run server
 npm run dev
 ```
 
-**Access:** http://localhost:5173
+**Access:** http://localhost:3000
 
 ## Available Modules
 
