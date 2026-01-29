@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Terminal as TerminalIcon, 
-  Globe, 
-  FileSearch, 
-  Flag, 
-  ShieldAlert, 
-  ChevronRight, 
-  Copy, 
-  CheckCircle2, 
-  Lock, 
+import {
+  Terminal as TerminalIcon,
+  Globe,
+  FileSearch,
+  Flag,
+  ShieldAlert,
+  ChevronRight,
+  Copy,
+  CheckCircle2,
+  Lock,
   Unlock,
   AlertTriangle,
   Lightbulb,
@@ -24,7 +24,13 @@ import {
   Activity,
   Layers,
   Power,
-  TrendingUp
+  TrendingUp,
+  MailCheck,
+  Info,
+  User,
+  Users,
+  CalendarCheck,
+  ArrowRightCircle
 } from 'lucide-react';
 
 // FULL LOGIC HELPERS (Restored to ensure the app actually runs)
@@ -107,7 +113,10 @@ const MachineSolver = () => {
   const [machine, setMachine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('browser');
+  // Default to INTERFACE for web, cloud, social_engineering; else fallback to flags
+  const [activeTab, setActiveTab] = useState(() => {
+    return ['web', 'cloud', 'social_engineering'].includes(machine?.domain) ? 'browser' : 'flags';
+  });
   const [flagInputs, setFlagInputs] = useState({});
   const [flagResults, setFlagResults] = useState({});
   const [submittingFlags, setSubmittingFlags] = useState({});
@@ -180,7 +189,7 @@ const MachineSolver = () => {
       const currentIndex = allUserMachines.findIndex(m => m._id === machine._id);
       if (currentIndex !== -1 && currentIndex < allUserMachines.length - 1) {
         const nextMachine = allUserMachines[currentIndex + 1];
-        setTimeout(() => { navigate(`/solve/${nextMachine._id}`); }, 2000); 
+        setTimeout(() => { navigate(`/solve/${nextMachine._id}`); }, 2000);
       }
     }
   };
@@ -202,7 +211,7 @@ const MachineSolver = () => {
         await Promise.all([fetchUserStats(), fetchMachine(), fetchMachineSolutions()]);
         setTimeout(() => checkAndNavigateToNextMachine(), 100);
       }
-    } catch (err) { 
+    } catch (err) {
       setFlagResults(prev => ({ ...prev, [vulnerabilityInstanceId]: { correct: false, message: 'Error submitting flag' } }));
     } finally { setSubmittingFlags(prev => ({ ...prev, [vulnerabilityInstanceId]: false })); }
   };
@@ -230,42 +239,42 @@ const MachineSolver = () => {
     return (
       <div className="space-y-6">
         <div className="relative group">
-            <div className="absolute -inset-1 bg-emerald-500/20 rounded blur group-hover:opacity-100 transition duration-500"></div>
-            <div className="relative bg-black border-2 border-emerald-500/30 p-6 rounded-sm shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-                <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] text-emerald-500 font-black tracking-[0.4em] uppercase glow-text italic">Active_Node_Linked</span>
-                    <span className="text-[9px] font-mono text-emerald-900">ID: {machine._id.slice(-6).toUpperCase()}</span>
-                </div>
-                <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4 glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">
-                  {machine.name}
-                </h1>
-                <div className="flex gap-2">
-                    <span className="px-2 py-0.5 bg-emerald-900/20 border border-emerald-500/40 text-[9px] font-black text-emerald-400 uppercase tracking-widest">Sctr: {machine.domain}</span>
-                    <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30 text-[9px] font-black text-yellow-500 uppercase tracking-widest flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.1)]">
-                        <TrendingUp size={10}/> XP: {currentPoints} / {machine.totalPoints}
-                    </span>
-                </div>
+          <div className="absolute -inset-1 bg-emerald-500/20 rounded blur group-hover:opacity-100 transition duration-500"></div>
+          <div className="relative bg-black border-2 border-emerald-500/30 p-6 rounded-sm shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-[10px] text-emerald-500 font-black tracking-[0.4em] uppercase glow-text italic">Active_Node_Linked</span>
+              <span className="text-[9px] font-mono text-emerald-900">ID: {machine._id.slice(-6).toUpperCase()}</span>
             </div>
+            <h1 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4 glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">
+              {machine.name}
+            </h1>
+            <div className="flex gap-2">
+              <span className="px-2 py-0.5 bg-emerald-900/20 border border-emerald-500/40 text-[9px] font-black text-emerald-400 uppercase tracking-widest">Sctr: {machine.domain}</span>
+              <span className="px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/30 text-[9px] font-black text-yellow-500 uppercase tracking-widest flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.1)]">
+                <TrendingUp size={10} /> XP: {currentPoints} / {machine.totalPoints}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="bg-[#050505] p-5 border border-white/5 rounded-sm relative group overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-            <div className="flex justify-between items-end mb-4">
-                <div className="space-y-1">
-                    <span className="text-[10px] font-black text-emerald-900 tracking-widest uppercase block italic">Neural_Breach_Status</span>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-black text-white italic tracking-tighter glow-text">{Math.round((solvedCount / totalVulns) * 100)}%</span>
-                        <span className="text-[10px] font-mono text-emerald-800 uppercase animate-pulse">Infiltrating...</span>
-                    </div>
-                </div>
-                <div className="text-right flex flex-col">
-                    <span className="text-xs font-mono font-bold text-emerald-400 drop-shadow-[0_0_5px_#10b981]">{solvedCount} / {totalVulns}</span>
-                    <span className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">Captured</span>
-                </div>
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+          <div className="flex justify-between items-end mb-4">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-emerald-900 tracking-widest uppercase block italic">Neural_Breach_Status</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-black text-white italic tracking-tighter glow-text">{Math.round((solvedCount / totalVulns) * 100)}%</span>
+                <span className="text-[10px] font-mono text-emerald-800 uppercase animate-pulse">Infiltrating...</span>
+              </div>
             </div>
-            <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${totalVulns > 0 ? (solvedCount / totalVulns) * 100 : 0}%` }} className="h-full bg-emerald-500 shadow-[0_0_20px_#10b981]" />
+            <div className="text-right flex flex-col">
+              <span className="text-xs font-mono font-bold text-emerald-400 drop-shadow-[0_0_5px_#10b981]">{solvedCount} / {totalVulns}</span>
+              <span className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">Captured</span>
             </div>
+          </div>
+          <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-white/5">
+            <motion.div initial={{ width: 0 }} animate={{ width: `${totalVulns > 0 ? (solvedCount / totalVulns) * 100 : 0}%` }} className="h-full bg-emerald-500 shadow-[0_0_20px_#10b981]" />
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -287,11 +296,11 @@ const MachineSolver = () => {
                 >
                   <div className="flex items-center gap-4 relative z-10">
                     <div className={`${isActive ? 'text-emerald-400 drop-shadow-[0_0_10px_#10b981]' : (isSolved ? 'text-emerald-800' : 'text-zinc-800')}`}>
-                        {isSolved ? <Unlock size={18} /> : <Lock size={18} />}
+                      {isSolved ? <Unlock size={18} /> : <Lock size={18} />}
                     </div>
                     <div className="flex flex-col text-left">
-                        <span className={`text-[8px] font-black tracking-[0.2em] ${isActive ? 'text-emerald-400' : 'text-zinc-700'}`}>VECTOR_0{idx + 1}</span>
-                        <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{vuln.moduleId.replace(/_/g, ' ')}</span>
+                      <span className={`text-[8px] font-black tracking-[0.2em] ${isActive ? 'text-emerald-400' : 'text-zinc-700'}`}>VECTOR_0{idx + 1}</span>
+                      <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{vuln.moduleId.replace(/_/g, ' ')}</span>
                     </div>
                   </div>
                   <div className={`font-mono text-[10px] font-black transition-colors relative z-10 ${isActive ? 'text-emerald-400' : 'text-emerald-900'}`}>
@@ -309,7 +318,10 @@ const MachineSolver = () => {
 
   const renderTabBar = () => {
     const tabs = [];
-    if (machine.domain === 'web' || machine.domain === 'cloud') tabs.push({ id: 'browser', label: 'INTERFACE', icon: <Globe size={20} /> });
+    // Add INTERFACE tab for web, cloud, and social_engineering domains
+    if (['web', 'cloud', 'social_engineering'].includes(machine.domain)) {
+      tabs.push({ id: 'browser', label: 'INTERFACE', icon: <Globe size={20} /> });
+    }
     if (machine.domain === 'red_team' || machine.domain === 'cloud' || machine.domain === 'forensics' || machine.terminalEnabled) tabs.push({ id: 'terminal', label: 'SHELL', icon: <TerminalIcon size={20} /> });
     if (machine.domain === 'blue_team' || machine.domain === 'forensics') tabs.push({ id: 'files', label: 'BINARY', icon: <FileSearch size={20} /> });
     tabs.push({ id: 'flags', label: 'INFILTRATE', icon: <Flag size={20} /> });
@@ -335,11 +347,11 @@ const MachineSolver = () => {
     <div className="bg-[#020202] border-x border-b border-white/10 flex flex-col h-[750px] shadow-2xl overflow-hidden">
       <div className="flex justify-between items-center px-8 py-4 border-b border-white/5 bg-[#080808]">
         <div className="flex items-center gap-3 text-emerald-500/80">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-            <span className="text-[11px] font-black tracking-[0.4em] uppercase glow-text italic">Live_Node_Signal</span>
+          <MailCheck size={18} className="text-emerald-400" />
+          <span className="text-[11px] font-black tracking-[0.4em] uppercase glow-text italic">Phishing Email</span>
         </div>
-        <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-600 hover:text-emerald-400 transition-all uppercase italic">
-          DECOUPLE_WINDOW <ChevronRight size={14} className="inline ml-1"/>
+        <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-600 hover:text-emerald-400 transition-all uppercase italic flex items-center gap-1">
+          Open in New Tab <ArrowRightCircle size={14} className="inline ml-1" />
         </a>
       </div>
       <div className="flex-1 bg-black relative">
@@ -353,32 +365,32 @@ const MachineSolver = () => {
     return (
       <div className="bg-[#020202] border-x border-b border-white/10 p-16 h-[750px] flex flex-col justify-center">
         <div className="max-w-3xl mx-auto w-full space-y-10">
-            <div className="space-y-4">
-                <label className="text-[11px] font-black text-emerald-900 tracking-[0.5em] uppercase block pl-2 italic">Access_Protocol</label>
-                <div className="bg-black border-2 border-emerald-900/30 p-8 rounded flex justify-between items-center group shadow-[inset_0_0_40px_rgba(0,0,0,1)]">
-                    <code className="text-2xl font-black text-emerald-400 tracking-tighter glow-text">{sshCommand}</code>
-                    <button onClick={() => { navigator.clipboard.writeText(sshCommand); alert('COPIED!'); }} className="p-4 bg-emerald-500/5 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-black hover:shadow-[0_0_30px_#10b981] transition-all rounded-sm">
-                        <Copy size={22}/>
-                    </button>
-                </div>
+          <div className="space-y-4">
+            <label className="text-[11px] font-black text-emerald-900 tracking-[0.5em] uppercase block pl-2 italic">Access_Protocol</label>
+            <div className="bg-black border-2 border-emerald-900/30 p-8 rounded flex justify-between items-center group shadow-[inset_0_0_40px_rgba(0,0,0,1)]">
+              <code className="text-2xl font-black text-emerald-400 tracking-tighter glow-text">{sshCommand}</code>
+              <button onClick={() => { navigator.clipboard.writeText(sshCommand); alert('COPIED!'); }} className="p-4 bg-emerald-500/5 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-black hover:shadow-[0_0_30px_#10b981] transition-all rounded-sm">
+                <Copy size={22} />
+              </button>
             </div>
-            <div className="grid grid-cols-2 gap-10">
-                <div className="space-y-3 bg-[#080808] p-6 border border-white/5 rounded-sm">
-                    <label className="text-[10px] font-black text-zinc-700 tracking-[0.3em] uppercase block italic">Token</label>
-                    <code className="text-white text-xl font-bold glow-text">ctfuser</code>
-                </div>
-                <div className="space-y-3 bg-[#080808] p-6 border border-white/5 rounded-sm">
-                    <label className="text-[10px] font-black text-zinc-700 tracking-[0.3em] uppercase block italic">Secret</label>
-                    <code className="text-white text-xl font-bold glow-text">password123</code>
-                </div>
+          </div>
+          <div className="grid grid-cols-2 gap-10">
+            <div className="space-y-3 bg-[#080808] p-6 border border-white/5 rounded-sm">
+              <label className="text-[10px] font-black text-zinc-700 tracking-[0.3em] uppercase block italic">Token</label>
+              <code className="text-white text-xl font-bold glow-text">ctfuser</code>
             </div>
-            <div className="p-8 bg-red-950/10 border-2 border-red-500/20 rounded-sm">
-                <h4 className="flex items-center gap-3 text-red-500 text-[11px] font-black uppercase mb-6 tracking-[0.4em] glow-text italic underline">MISSION_GUIDELINES</h4>
-                <ul className="text-xs text-red-100/30 space-y-4 font-bold italic">
-                    <li>[!] SECURE RSA-4096 BIT TUNNEL ENCRYPTION</li>
-                    <li>[!] DATA BLOCKS LOCATED WITHIN /ROOT/FS</li>
-                </ul>
+            <div className="space-y-3 bg-[#080808] p-6 border border-white/5 rounded-sm">
+              <label className="text-[10px] font-black text-zinc-700 tracking-[0.3em] uppercase block italic">Secret</label>
+              <code className="text-white text-xl font-bold glow-text">password123</code>
             </div>
+          </div>
+          <div className="p-8 bg-red-950/10 border-2 border-red-500/20 rounded-sm">
+            <h4 className="flex items-center gap-3 text-red-500 text-[11px] font-black uppercase mb-6 tracking-[0.4em] glow-text italic underline">MISSION_GUIDELINES</h4>
+            <ul className="text-xs text-red-100/30 space-y-4 font-bold italic">
+              <li>[!] SECURE RSA-4096 BIT TUNNEL ENCRYPTION</li>
+              <li>[!] DATA BLOCKS LOCATED WITHIN /ROOT/FS</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
@@ -387,11 +399,11 @@ const MachineSolver = () => {
   const renderFilesTab = () => (
     <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
       <div className="px-10 py-8 border-b border-white/5 bg-[#080808] flex items-center gap-6">
-          <div className="p-4 bg-emerald-500 text-black rounded shadow-[0_0_30px_#10b981] animate-pulse"><FileSearch size={24}/></div>
-          <div>
-            <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase italic">ENCRYPTED_VOLUMES_SCAN</h3>
-            <p className="text-[10px] text-emerald-800 font-bold tracking-widest mt-1 uppercase">Decoding file metadata...</p>
-          </div>
+        <div className="p-4 bg-emerald-500 text-black rounded shadow-[0_0_30px_#10b981] animate-pulse"><FileSearch size={24} /></div>
+        <div>
+          <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase italic">ENCRYPTED_VOLUMES_SCAN</h3>
+          <p className="text-[10px] text-emerald-800 font-bold tracking-widest mt-1 uppercase">Decoding file metadata...</p>
+        </div>
       </div>
       <div className="flex-1 bg-black">
         <iframe src={machine.access?.url || machine.accessUrl} title={machine.name} className="w-full h-full border-none opacity-40 grayscale" />
@@ -411,27 +423,27 @@ const MachineSolver = () => {
               ${isSolved ? 'border-emerald-500/20 bg-emerald-950/5 opacity-50' : 'border-white/10 bg-[#080808]'}`}>
             <div className="flex justify-between items-start mb-10">
               <div className="flex items-center gap-10">
-                  <span className="text-6xl font-black text-emerald-950/20 italic font-mono">0{idx + 1}</span>
-                  <div className="space-y-2">
-                      <span className="text-[11px] font-black tracking-[0.5em] text-emerald-900 uppercase block pl-1 italic">SUB_PROCESS</span>
-                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{vuln.moduleId.replace(/_/g, ' ')}</h3>
-                  </div>
+                <span className="text-6xl font-black text-emerald-950/20 italic font-mono">0{idx + 1}</span>
+                <div className="space-y-2">
+                  <span className="text-[11px] font-black tracking-[0.5em] text-emerald-900 uppercase block pl-1 italic">SUB_PROCESS</span>
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{vuln.moduleId.replace(/_/g, ' ')}</h3>
+                </div>
               </div>
               <div className="text-right bg-emerald-500/5 p-4 border border-emerald-500/10 rounded-sm">
-                  <span className="text-[10px] font-black text-emerald-500/60 tracking-[0.4em] uppercase block mb-1">XP_ALLOCATION</span>
-                  <span className="text-2xl font-black font-mono text-white glow-text">{vuln.points}</span>
+                <span className="text-[10px] font-black text-emerald-500/60 tracking-[0.4em] uppercase block mb-1">XP_ALLOCATION</span>
+                <span className="text-2xl font-black font-mono text-white glow-text">{vuln.points}</span>
               </div>
             </div>
             {!isSolved ? (
               <form onSubmit={(e) => handleFlagSubmit(e, vuln.vulnerabilityInstanceId)} className="space-y-6 relative z-10">
                 <div className="flex gap-4">
                   <input
-                      type="text"
-                      value={flagValue}
-                      onChange={(e) => setFlagInputs(prev => ({ ...prev, [vuln.vulnerabilityInstanceId]: e.target.value }))}
-                      placeholder="FLAG{ACCESS_KEY}"
-                      className="flex-1 bg-black border-2 border-emerald-900/30 p-5 text-emerald-400 font-mono text-sm focus:outline-none focus:border-emerald-500 transition-all placeholder:text-emerald-950 shadow-[inset_0_0_30px_rgba(0,0,0,1)] uppercase tracking-[0.2em]"
-                      disabled={isSubmitting}
+                    type="text"
+                    value={flagValue}
+                    onChange={(e) => setFlagInputs(prev => ({ ...prev, [vuln.vulnerabilityInstanceId]: e.target.value }))}
+                    placeholder="FLAG{ACCESS_KEY}"
+                    className="flex-1 bg-black border-2 border-emerald-900/30 p-5 text-emerald-400 font-mono text-sm focus:outline-none focus:border-emerald-500 transition-all placeholder:text-emerald-950 shadow-[inset_0_0_30px_rgba(0,0,0,1)] uppercase tracking-[0.2em]"
+                    disabled={isSubmitting}
                   />
                   <button type="submit" className="px-12 bg-emerald-600 text-black font-black uppercase text-xs tracking-[0.25em] hover:bg-white hover:shadow-[0_0_30px_#fff] transition-all disabled:opacity-20 rounded-sm" disabled={isSubmitting || !flagValue.trim()}>
                     {isSubmitting ? 'VERIFYING...' : 'EXTRACT'}
@@ -439,7 +451,7 @@ const MachineSolver = () => {
                 </div>
                 {result && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`p-4 text-[11px] font-black uppercase tracking-[0.3em] border flex items-center gap-3 ${result.correct ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400' : 'bg-red-500/10 border-red-500 text-red-500'}`}>
-                    {result.correct ? <CheckCircle2 size={16}/> : <AlertTriangle size={16}/>}
+                    {result.correct ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
                     &gt; {result.correct ? `CREDITS_ESTABLISHED: +${result.points} XP` : `ERROR: ${result.message}`}
                   </motion.div>
                 )}
@@ -462,7 +474,7 @@ const MachineSolver = () => {
       <footer className={`mt-10 p-10 border rounded-sm relative overflow-hidden ${!isFullySolved ? 'bg-black/40 border-white/5 opacity-50' : 'bg-emerald-500/5 border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.1)]'}`}>
         {!isFullySolved ? (
           <div className="flex items-center justify-center gap-4 text-zinc-700 font-black uppercase text-[11px] tracking-[0.5em] italic">
-            <Lock size={18} className="opacity-20"/> ACCESS_DENIED // CAPTURE_REQUIRED ({solvedVulns.length}/{totalVulns})
+            <Lock size={18} className="opacity-20" /> ACCESS_DENIED // CAPTURE_REQUIRED ({solvedVulns.length}/{totalVulns})
           </div>
         ) : (
           <div className="flex flex-col md:flex-row justify-between items-center gap-10 relative z-10">
@@ -471,7 +483,7 @@ const MachineSolver = () => {
               <p className="text-[11px] text-emerald-800 font-black uppercase tracking-widest pl-1 italic">SUBMIT_FINDINGS_FOR_VALIDATION</p>
             </div>
             <form onSubmit={handleReportUpload} className="flex gap-4">
-              <input type="file" accept=".pdf,.md,.txt" onChange={(e) => setReportFile(e.target.files[0])} className="hidden" id="report-file"/>
+              <input type="file" accept=".pdf,.md,.txt" onChange={(e) => setReportFile(e.target.files[0])} className="hidden" id="report-file" />
               <label htmlFor="report-file" className="px-8 py-4 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500/10 transition-all cursor-pointer font-black uppercase text-[11px] tracking-[0.2em] rounded-sm bg-black italic">
                 {reportFile ? reportFile.name : 'UPLOAD_FILES...'}
               </label>
@@ -487,10 +499,10 @@ const MachineSolver = () => {
 
   if (loading) return (
     <div className="h-screen bg-black flex flex-col items-center justify-center text-emerald-500 font-mono relative overflow-hidden">
-        <div className="w-80 h-1 bg-white/5 mb-8 rounded-full overflow-hidden border border-white/10 relative z-10">
-            <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} className="w-1/2 h-full bg-emerald-500 shadow-[0_0_20px_#10b981]" />
-        </div>
-        <p className="text-[11px] font-black tracking-[0.8em] animate-pulse relative z-10 uppercase glow-text">Establishing_Neural_Sync</p>
+      <div className="w-80 h-1 bg-white/5 mb-8 rounded-full overflow-hidden border border-white/10 relative z-10">
+        <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} className="w-1/2 h-full bg-emerald-500 shadow-[0_0_20px_#10b981]" />
+      </div>
+      <p className="text-[11px] font-black tracking-[0.8em] animate-pulse relative z-10 uppercase glow-text">Establishing_Neural_Sync</p>
     </div>
   );
 
@@ -498,43 +510,43 @@ const MachineSolver = () => {
     <div className="min-h-screen bg-black text-white font-mono selection:bg-emerald-500 selection:text-black relative">
       <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] [background:linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] [background-size:100%_2px,3px_100%]"></div>
       <div className="flex flex-col xl:flex-row h-screen overflow-hidden relative">
-        
+
         <aside className="w-full xl:w-[480px] bg-[#020202] border-r border-emerald-500/20 p-12 overflow-y-auto custom-scrollbar flex flex-col relative z-30 shadow-[40px_0_100px_rgba(0,0,0,1)]">
           <div className="absolute left-0 top-0 h-full w-[1px] bg-emerald-500/20 shadow-[0_0_15px_#10b981]" />
-          
+
           {renderLabHeader()}
-          
+
           <div className="mt-12 space-y-6">
-            <button 
+            <button
               onClick={() => { setShowSolutions(!showSolutions); if (!showSolutions) fetchMachineSolutions(); }}
               className={`w-full group relative flex items-center justify-center gap-4 p-5 font-black uppercase text-[11px] tracking-[0.3em] transition-all border-2 overflow-hidden
                 ${showSolutions ? 'bg-emerald-500 text-black border-white shadow-[0_0_40px_#10b981]' : 'bg-[#080808] text-emerald-500 border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]'}`}
             >
-              <Lightbulb size={20} className={showSolutions ? '' : 'animate-pulse'}/> 
+              <Lightbulb size={20} className={showSolutions ? '' : 'animate-pulse'} />
               {showSolutions ? 'DISCONNECT_INTEL' : 'NEURAL_HINT_LINK'}
               <div className="absolute inset-0 bg-white/5 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </button>
           </div>
 
           <div className="mt-auto pt-10 border-t border-white/5 flex flex-col gap-6">
-             <button onClick={() => navigate('/my-machines')} className="group flex items-center gap-6 text-emerald-950 hover:text-emerald-400 font-black transition-all text-[11px] tracking-[0.4em] uppercase italic">
-               <div className="p-4 bg-black border border-zinc-900 group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all rounded-sm">
+            <button onClick={() => navigate('/my-machines')} className="group flex items-center gap-6 text-emerald-950 hover:text-emerald-400 font-black transition-all text-[11px] tracking-[0.4em] uppercase italic">
+              <div className="p-4 bg-black border border-zinc-900 group-hover:border-emerald-500/50 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all rounded-sm">
                 <Power size={20} />
-               </div>
-               TERMINATE_SESSION
-             </button>
-             <div className="flex items-center gap-3 pl-1">
-                <div className="flex gap-1">
-                    {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-emerald-900 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />)}
-                </div>
-                <span className="text-[9px] text-emerald-950 font-black tracking-[0.3em] uppercase">Status: Core_Operational</span>
-             </div>
+              </div>
+              TERMINATE_SESSION
+            </button>
+            <div className="flex items-center gap-3 pl-1">
+              <div className="flex gap-1">
+                {[1, 2, 3].map(i => <div key={i} className="w-1 h-3 bg-emerald-900 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />)}
+              </div>
+              <span className="text-[9px] text-emerald-950 font-black tracking-[0.3em] uppercase">Status: Core_Operational</span>
+            </div>
           </div>
         </aside>
 
         <main className="flex-1 flex flex-col bg-black relative overflow-hidden">
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none [background-image:linear-gradient(to_right,#10b981_1px,transparent_1px),linear-gradient(to_bottom,#10b981_1px,transparent_1px)] [background-size:80px_80px]"></div>
-          
+
           <AnimatePresence>
             {showSolutions && (
               <motion.div initial={{ opacity: 0, x: 200 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 200 }} transition={{ type: "spring", damping: 25 }} className="absolute inset-0 z-50 bg-[#020202]/98 backdrop-blur-3xl p-20 overflow-y-auto custom-scrollbar border-l border-emerald-500/20">
@@ -542,11 +554,11 @@ const MachineSolver = () => {
                   <div className="space-y-4">
                     <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase glow-text decoration-emerald-500 decoration-8 underline-offset-[16px] underline">INTEL_RECOVERY</h2>
                     <div className="flex gap-4 items-center">
-                        <Activity size={16} className="text-emerald-500" />
-                        <p className="text-[11px] font-black text-emerald-800 tracking-[0.6em] uppercase italic">Decrypting Central Intelligence Bank Assets...</p>
+                      <Activity size={16} className="text-emerald-500" />
+                      <p className="text-[11px] font-black text-emerald-800 tracking-[0.6em] uppercase italic">Decrypting Central Intelligence Bank Assets...</p>
                     </div>
                   </div>
-                  <button onClick={() => setShowSolutions(false)} className="p-5 bg-white/5 hover:bg-red-500/20 transition-all text-emerald-500 hover:text-red-500 border border-white/5 rounded-sm shadow-2xl"><X size={40}/></button>
+                  <button onClick={() => setShowSolutions(false)} className="p-5 bg-white/5 hover:bg-red-500/20 transition-all text-emerald-500 hover:text-red-500 border border-white/5 rounded-sm shadow-2xl"><X size={40} /></button>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                   {machine.vulnerabilities?.map((vuln, idx) => {
@@ -556,22 +568,22 @@ const MachineSolver = () => {
                       <div key={idx} className={`p-12 border-2 transition-all duration-700 relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)]
                         ${isSolved ? 'border-emerald-500/30 bg-emerald-500/5 shadow-[0_0_40px_rgba(16,185,129,0.05)]' : 'border-white/5 bg-zinc-950/40'}`}>
                         <div className="flex items-center justify-between mb-10">
-                            <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter glow-text underline decoration-emerald-900 decoration-2 underline-offset-4">{vuln.moduleId.replace(/_/g, ' ')}</h3>
-                            <span className={`text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded border-2
+                          <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter glow-text underline decoration-emerald-900 decoration-2 underline-offset-4">{vuln.moduleId.replace(/_/g, ' ')}</h3>
+                          <span className={`text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded border-2
                                 ${isSolved ? 'bg-emerald-500 text-black border-white shadow-[0_0_25px_#10b981]' : 'text-zinc-800 border-zinc-900'}`}>{isSolved ? 'CAPTURED' : 'LOCKED'}</span>
                         </div>
                         <div className="space-y-10">
-                            <div className="space-y-4">
-                                <h4 className="text-[11px] font-black text-emerald-900 uppercase tracking-[0.5em] flex items-center gap-2 italic">0x01 // INFILTRATION_STRATEGY</h4>
-                                <ol className="text-[13px] text-zinc-400 space-y-5 list-decimal list-inside leading-relaxed border-l-2 border-emerald-900/20 ml-2 italic">{(solution.steps || getSolutionSteps(vuln.moduleId)).map((s, i) => <li key={i} className="pl-6">{s}</li>)}</ol>
+                          <div className="space-y-4">
+                            <h4 className="text-[11px] font-black text-emerald-900 uppercase tracking-[0.5em] flex items-center gap-2 italic">0x01 // INFILTRATION_STRATEGY</h4>
+                            <ol className="text-[13px] text-zinc-400 space-y-5 list-decimal list-inside leading-relaxed border-l-2 border-emerald-900/20 ml-2 italic">{(solution.steps || getSolutionSteps(vuln.moduleId)).map((s, i) => <li key={i} className="pl-6">{s}</li>)}</ol>
+                          </div>
+                          {isSolved && solution.flag && (
+                            <div className="p-8 bg-black border-2 border-emerald-500/20 space-y-4 shadow-[inset_0_0_30px_rgba(0,0,0,1)] relative">
+                              <div className="absolute top-2 right-4 opacity-5 rotate-12"><Flag size={50} /></div>
+                              <label className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.5em] block">RECOVERED_SECRET_BLOCK</label>
+                              <code className="text-lg font-black text-white block break-all font-mono glow-text p-4 bg-emerald-500/5 border border-emerald-500/10 tracking-widest">{solution.flag}</code>
                             </div>
-                            {isSolved && solution.flag && (
-                                <div className="p-8 bg-black border-2 border-emerald-500/20 space-y-4 shadow-[inset_0_0_30px_rgba(0,0,0,1)] relative">
-                                    <div className="absolute top-2 right-4 opacity-5 rotate-12"><Flag size={50}/></div>
-                                    <label className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.5em] block">RECOVERED_SECRET_BLOCK</label>
-                                    <code className="text-lg font-black text-white block break-all font-mono glow-text p-4 bg-emerald-500/5 border border-emerald-500/10 tracking-widest">{solution.flag}</code>
-                                </div>
-                            )}
+                          )}
                         </div>
                       </div>
                     );
@@ -583,18 +595,18 @@ const MachineSolver = () => {
 
           <section className="flex-1 flex flex-col overflow-hidden relative z-10 p-12">
             <div className="max-w-[1500px] mx-auto w-full h-full flex flex-col">
-                {renderTabBar()}
-                <div className="flex-1 overflow-y-auto custom-scrollbar pt-12">
-                    <AnimatePresence mode="wait">
-                        <motion.div key={activeTab} initial={{ opacity: 0, scale: 0.99, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.99, y: -10 }} transition={{ duration: 0.3 }} className="h-full">
-                            {activeTab === 'browser' && renderBrowserTab()}
-                            {activeTab === 'terminal' && renderTerminalTab()}
-                            {activeTab === 'files' && renderFilesTab()}
-                            {activeTab === 'flags' && renderFlagsTab()}
-                        </motion.div>
-                    </AnimatePresence>
-                    {renderReportUpload()}
-                </div>
+              {renderTabBar()}
+              <div className="flex-1 overflow-y-auto custom-scrollbar pt-12">
+                <AnimatePresence mode="wait">
+                  <motion.div key={activeTab} initial={{ opacity: 0, scale: 0.99, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.99, y: -10 }} transition={{ duration: 0.3 }} className="h-full">
+                    {activeTab === 'browser' && renderBrowserTab()}
+                    {activeTab === 'terminal' && renderTerminalTab()}
+                    {activeTab === 'files' && renderFilesTab()}
+                    {activeTab === 'flags' && renderFlagsTab()}
+                  </motion.div>
+                </AnimatePresence>
+                {renderReportUpload()}
+              </div>
             </div>
           </section>
         </main>

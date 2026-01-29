@@ -1,0 +1,25 @@
+{
+  "name": "Spear Phishing Campaign",
+  "description": "Targeted phishing attacks simulation",
+  "difficulty": "high",
+  "points": 85,
+  "category": "social_engineering",
+  "route": "/spear-phishing",
+  "solve_method": "gui",
+  "flag": "FLAG{SPEAR_PHISHING_EXPERT}",
+  "solution": {
+    "explanation": "Learn advanced targeted phishing techniques and how to defend against them.",
+    "steps": [
+      "Research the target organization and individual",
+      "Craft highly personalized phishing content",
+      "Identify advanced red flags in targeted attacks",
+      "Implement organization-wide defense strategies"
+    ],
+    "hints": [
+      "Spear phishing uses personal information for credibility",
+      "Check for unusual requests even from known contacts",
+      "Verify through secondary communication channels",
+      "Report suspicious emails to security teams"
+    ]
+  }
+}

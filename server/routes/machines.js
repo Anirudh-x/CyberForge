@@ -30,7 +30,7 @@ const generateUniqueFlag = (moduleId, machineId) => {
 // Create a new machine
 router.post('/create', authMiddleware, async (req, res) => {
   try {
-    const { name, domain, modules } = req.body;
+    const { name, domain, modules, customData } = req.body;
     const userId = req.userId;
     const teamName = req.teamName;
 
@@ -43,7 +43,7 @@ router.post('/create', authMiddleware, async (req, res) => {
     }
 
     // Validate domain
-    const validDomains = ['web', 'red_team', 'blue_team', 'cloud', 'forensics'];
+    const validDomains = ['web', 'red_team', 'blue_team', 'cloud', 'forensics', 'social_engineering'];
     if (!validDomains.includes(domain)) {
       return res.status(400).json({
         success: false,
@@ -55,7 +55,7 @@ router.post('/create', authMiddleware, async (req, res) => {
     let totalPoints = 0;
     const vulnerabilities = [];
     const solutions = new Map();
-    
+
     // Pre-generate machineId for vulnerability instance IDs
     const tempMachineId = new mongoose.Types.ObjectId().toString();
     console.log(`🆔 Generated temp machine ID: ${tempMachineId}`);
@@ -66,14 +66,14 @@ router.post('/create', authMiddleware, async (req, res) => {
         const metadata = await getModuleMetadata(domain, moduleId);
         if (metadata && metadata.points) {
           totalPoints += metadata.points;
-          
+
           // Generate unique instance ID but use metadata flag (hardcoded)
           const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, moduleId, i);
-          
+
           console.log(`🔍 Creating vulnerability for ${moduleId}:`);
           console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
           console.log(`   Flag from metadata: ${metadata.flag}`);
-          
+
           // Add vulnerability with unique instance ID and METADATA FLAG (hardcoded)
           vulnerabilities.push({
             vulnerabilityInstanceId: vulnerabilityInstanceId,
@@ -84,7 +84,7 @@ router.post('/create', authMiddleware, async (req, res) => {
             difficulty: metadata.difficulty || 'medium',
             solvedBy: []
           });
-          
+
           // Store solution keyed by vulnerabilityInstanceId (NOT moduleId)
           // This ensures each instance has its own solution data
           solutions.set(vulnerabilityInstanceId, {
@@ -119,6 +119,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       totalPoints,
       vulnerabilities,
       solutions: solutions,  // Store machine-specific solutions
+      customData: customData || new Map(),  // Store custom data for dynamic modules
       status: 'building'
     });
 

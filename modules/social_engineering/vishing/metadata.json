@@ -1,0 +1,25 @@
+{
+  "name": "Vishing Scripts",
+  "description": "Voice phishing call scripts for security awareness",
+  "difficulty": "high",
+  "points": 75,
+  "category": "social_engineering",
+  "route": "/vishing",
+  "solve_method": "gui",
+  "flag": "FLAG{VISHING_DEFENSE_MASTER}",
+  "solution": {
+    "explanation": "Learn to recognize and defend against voice phishing (vishing) attacks.",
+    "steps": [
+      "Analyze the vishing script structure",
+      "Identify manipulation techniques used",
+      "Understand urgency and fear tactics",
+      "Practice proper verification procedures"
+    ],
+    "hints": [
+      "Never provide sensitive information over unsolicited calls",
+      "Always verify caller identity through official channels",
+      "Be wary of urgent requests for action",
+      "Hang up and call back using official numbers"
+    ]
+  }
+}
