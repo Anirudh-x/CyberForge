@@ -1,3 +1,4 @@
+/* eslint-env node */
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -49,11 +50,12 @@ app.get('/api/health', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, _next) => {
   console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
-    message: 'Something went wrong!' 
+  res.status(500).json({
+    success: false,
+    message: 'Something went wrong!'
   });
 });
 
