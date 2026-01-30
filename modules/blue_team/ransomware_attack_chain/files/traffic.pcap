@@ -1,0 +1,12 @@
+Packet capture from interface eth0
+Frame 1: 74 bytes on wire (592 bits), 74 bytes captured
+Ethernet II, Src: 08:00:27:ab:cd:ef, Dst: 52:54:00:12:34:56
+Internet Protocol Version 4, Src: 10.0.0.50, Dst: 185.220.101.45
+Transmission Control Protocol, Src Port: 54323, Dst Port: 443
+Hypertext Transfer Protocol
+POST /upload HTTP/1.1
+Host: 185.220.101.45
+Content-Type: multipart/form-data
+Content-Length: 4294967296
+
+...data...FLAG{84dc06c52c77c98c}...data...

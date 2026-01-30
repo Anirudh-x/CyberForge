@@ -66,8 +66,10 @@ export const buildDockerImage = async (domain, moduleId) => {
     console.log(`Building Docker image: ${imageName}`);
     console.log(`Module path: ${modulePath}`);
 
+    // Properly quote the path to handle spaces (especially on Windows)
+    const quotedPath = isWindows ? `"${modulePath}"` : `"${modulePath}"`;
     const { stdout, stderr } = await execAsync(
-      `docker build -t ${imageName} ${modulePath}`
+      `docker build -t ${imageName} ${quotedPath}`
     );
 
     if (stderr && !stderr.includes('WARNING')) {

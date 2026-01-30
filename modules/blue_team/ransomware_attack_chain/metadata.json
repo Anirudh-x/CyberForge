@@ -1,0 +1,68 @@
+{
+  "id": "ransomware_attack_chain",
+  "name": "Ransomware Attack Chain Generator",
+  "domain": "blue_team",
+  "difficulty": "high",
+  "description": "Analyze a realistic ransomware attack timeline following MITRE ATT&CK framework. Detect, respond, and score each attack stage.",
+  "solve_method": "gui",
+  "port": 3000,
+  "terminal_enabled": false,
+  "points": 500,
+  "flag": "FLAG{RANSOMWARE_ATTACK_CHAIN_COMPLETE}",
+  "hints": [
+    "Follow the attack timeline sequentially through all 6 stages",
+    "Each stage has unique artifacts: logs, commands, and files",
+    "Submit flags after completing each stage to unlock the next",
+    "Points are awarded based on detection and response timing"
+  ],
+  "learning_objectives": [
+    "Understand MITRE ATT&CK framework for ransomware attacks",
+    "Learn to analyze attack timelines and artifacts",
+    "Practice SOC incident response procedures",
+    "Identify attack stages: Initial Access, Execution, Persistence, Lateral Movement, Exfiltration, Impact"
+  ],
+  "attack_stages": [
+    {
+      "stage": 1,
+      "name": "Initial Access",
+      "mitre_id": "T1190",
+      "points": 80,
+      "description": "Exploit Public-Facing Application"
+    },
+    {
+      "stage": 2,
+      "name": "Execution",
+      "mitre_id": "T1059",
+      "points": 85,
+      "description": "Command and Scripting Interpreter"
+    },
+    {
+      "stage": 3,
+      "name": "Persistence",
+      "mitre_id": "T1053",
+      "points": 90,
+      "description": "Scheduled Task/Job"
+    },
+    {
+      "stage": 4,
+      "name": "Lateral Movement",
+      "mitre_id": "T1021",
+      "points": 95,
+      "description": "Remote Services"
+    },
+    {
+      "stage": 5,
+      "name": "Exfiltration",
+      "mitre_id": "T1041",
+      "points": 100,
+      "description": "Exfiltration Over C2 Channel"
+    },
+    {
+      "stage": 6,
+      "name": "Impact",
+      "mitre_id": "T1486",
+      "points": 105,
+      "description": "Data Encrypted for Impact"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ransomware-attack-chain",
+  "version": "1.0.0",
+  "description": "Ransomware Attack Chain CTF Challenge",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3"
+  },
+  "keywords": ["ctf", "cybersecurity", "ransomware", "challenge"],
+  "author": "CyberForge",
+  "license": "MIT"
+}

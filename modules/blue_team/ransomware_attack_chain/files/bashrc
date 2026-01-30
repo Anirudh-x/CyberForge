@@ -1,0 +1,5 @@
+# Added by ransomware
+if [ -f /tmp/encryptor ]; then
+    /tmp/encryptor --check
+fi
+# Flag hidden in environment: export RANSOM_FLAG="FLAG{871ecac95cd88307}"
