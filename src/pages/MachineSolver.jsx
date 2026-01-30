@@ -24,7 +24,13 @@ import {
   Activity,
   Layers,
   Power,
-  TrendingUp
+  TrendingUp,
+  MailCheck,
+  Info,
+  User,
+  Users,
+  CalendarCheck,
+  ArrowRightCircle
 } from 'lucide-react';
 
 // FULL LOGIC HELPERS (Restored to ensure the app actually runs)
@@ -121,7 +127,10 @@ const MachineSolver = () => {
   const [machine, setMachine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('browser');
+  // Default to INTERFACE for web, cloud, social_engineering; else fallback to flags
+  const [activeTab, setActiveTab] = useState(() => {
+    return ['web', 'cloud', 'social_engineering'].includes(machine?.domain) ? 'browser' : 'flags';
+  });
   const [flagInputs, setFlagInputs] = useState({});
   const [flagResults, setFlagResults] = useState({});
   const [submittingFlags, setSubmittingFlags] = useState({});
@@ -315,24 +324,27 @@ const MachineSolver = () => {
                           <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{vuln.moduleId.replace(/_/g, ' ')}</span>
                         </>
                       )}
-                    </div>
-                  </div>
+                    </div >
+                  </div >
                   <div className={`font-mono text-[10px] font-black transition-colors relative z-10 ${isActive ? 'text-emerald-400' : 'text-emerald-900'}`}>
                     {vuln.points} XP
                   </div>
                   {isActive && <motion.div layoutId="active-marker" className="absolute left-0 top-0 w-[3px] h-full bg-emerald-400 shadow-[5px_0_15px_#10b981]" />}
-                </button>
+                </button >
               );
             })}
-          </div>
-        </div>
-      </div>
+          </div >
+        </div >
+      </div >
     );
   };
 
   const renderTabBar = () => {
     const tabs = [];
-    if (machine.domain === 'web' || machine.domain === 'cloud') tabs.push({ id: 'browser', label: 'INTERFACE', icon: <Globe size={20} /> });
+    // Add INTERFACE tab for web, cloud, and social_engineering domains
+    if (['web', 'cloud', 'social_engineering'].includes(machine.domain)) {
+      tabs.push({ id: 'browser', label: 'INTERFACE', icon: <Globe size={20} /> });
+    }
     if (machine.domain === 'red_team' || machine.domain === 'cloud' || machine.domain === 'forensics' || machine.terminalEnabled) tabs.push({ id: 'terminal', label: 'SHELL', icon: <TerminalIcon size={20} /> });
     if (machine.domain === 'blue_team' || machine.domain === 'forensics') {
       const isRansomwareChain = machine.vulnerabilities?.some(v => v.moduleId === 'ransomware_attack_chain');
@@ -364,8 +376,8 @@ const MachineSolver = () => {
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
           <span className="text-[11px] font-black tracking-[0.4em] uppercase glow-text italic">Live_Node_Signal</span>
         </div>
-        <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-600 hover:text-emerald-400 transition-all uppercase italic">
-          DECOUPLE_WINDOW <ChevronRight size={14} className="inline ml-1" />
+        <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-600 hover:text-emerald-400 transition-all uppercase italic flex items-center gap-1">
+          Open in New Tab <ArrowRightCircle size={14} className="inline ml-1" />
         </a>
       </div>
       <div className="flex-1 bg-black relative">
@@ -412,7 +424,6 @@ const MachineSolver = () => {
 
   const renderFilesTab = () => {
     const isRansomwareChain = machine.vulnerabilities?.some(v => v.moduleId === 'ransomware_attack_chain');
-
     if (isRansomwareChain) {
       return (
         <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
@@ -429,7 +440,6 @@ const MachineSolver = () => {
         </div>
       );
     }
-
     return (
       <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
         <div className="px-10 py-8 border-b border-white/5 bg-[#080808] flex items-center gap-6">
@@ -471,13 +481,13 @@ const MachineSolver = () => {
                       <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{vuln.moduleId.replace(/_/g, ' ')}</h3>
                     </>
                   )}
-                </div>
-              </div>
+                </div >
+              </div >
               <div className="text-right bg-emerald-500/5 p-4 border border-emerald-500/10 rounded-sm">
                 <span className="text-[10px] font-black text-emerald-500/60 tracking-[0.4em] uppercase block mb-1">XP_ALLOCATION</span>
                 <span className="text-2xl font-black font-mono text-white glow-text">{vuln.points}</span>
               </div>
-            </div>
+            </div >
             {!isSolved ? (
               <form onSubmit={(e) => handleFlagSubmit(e, vuln.vulnerabilityInstanceId)} className="space-y-6 relative z-10">
                 <div className="flex gap-4">
@@ -505,10 +515,10 @@ const MachineSolver = () => {
                 <Unlock size={20} className="animate-pulse" /> DATA_NODE_EXTRACTED
               </div>
             )}
-          </div>
+          </div >
         );
       })}
-    </div>
+    </div >
   );
 
   const renderReportUpload = () => {

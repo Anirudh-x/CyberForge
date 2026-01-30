@@ -18,7 +18,7 @@ const machineSchema = new mongoose.Schema({
   domain: {
     type: String,
     required: true,
-    enum: ['web', 'red_team', 'blue_team', 'cloud', 'forensics']
+    enum: ['web', 'red_team', 'blue_team', 'cloud', 'forensics', 'social_engineering']
   },
   modules: [{
     type: String,
@@ -84,6 +84,12 @@ const machineSchema = new mongoose.Schema({
       flag: String,
       hints: [String]
     },
+    default: new Map()
+  },
+  // Custom data for dynamic modules (e.g., generated phishing emails)
+  customData: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
     default: new Map()
   },
   terminalEnabled: {

@@ -14,6 +14,8 @@ import flagRoutes from './routes/flags.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import reportRoutes from './routes/reports.js';
 import chatbotRoutes from './routes/chatbot.js';
+import phishingRoutes from './routes/phishing.js';
+import testPhishingRoutes from './routes/test_phishing.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -61,6 +63,8 @@ app.use('/api/flags', authMiddleware, flagRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/reports', authMiddleware, reportRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/phishing', phishingRoutes);
+app.use('/test/phishing', testPhishingRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

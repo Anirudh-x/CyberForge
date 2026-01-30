@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { Terminal, Shield, Cpu, Activity, Zap, Box, Layout, Database, Code, TerminalSquare, Info, Crosshair, CpuIcon, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { Terminal, Shield, Cpu, Activity, Zap, Box, Layout, Database, Code, TerminalSquare, Info, Crosshair, CpuIcon, X, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 
 // Components & Data
 import Navbar from '../components/Navbar';
@@ -11,12 +11,13 @@ import Footer from '../components/Footer';
 import DomainSelector from '../components/MachineBuilder/DomainSelector';
 import ModuleList from '../components/MachineBuilder/ModuleList';
 import MachineCanvas from '../components/MachineBuilder/MachineCanvas';
+import PhishingGenerator from '../components/MachineBuilder/PhishingGenerator';
 import { domains, modulesByDomain } from '../utils/machineData';
 
 export default function MachineBuilder() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   // -- Notification State --
   const [notification, setNotification] = useState(null);
 
@@ -26,6 +27,8 @@ export default function MachineBuilder() {
   const [activeModule, setActiveModule] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [machineName, setMachineName] = useState('');
+  const [isPhishingGeneratorOpen, setIsPhishingGeneratorOpen] = useState(false);
+  const [generatedPhishingEmail, setGeneratedPhishingEmail] = useState(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -83,6 +86,13 @@ export default function MachineBuilder() {
         status: 'created'
       };
 
+      // Include generated phishing email data if available
+      if (generatedPhishingEmail) {
+        machineConfig.customData = {
+          phishing_email: generatedPhishingEmail
+        };
+      }
+
       const response = await fetch('/api/machines/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,6 +107,7 @@ export default function MachineBuilder() {
         setMachineName('');
         setSelectedModules([]);
         setSelectedDomain(null);
+        setGeneratedPhishingEmail(null); // Clear generated email after successful creation
       } else {
         triggerAlert('COMPILATION_ERROR', data.message || 'System was unable to link the modules.');
       }
@@ -112,8 +123,8 @@ export default function MachineBuilder() {
     return (
       <div className="bg-black min-h-screen flex items-center justify-center font-mono">
         <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin shadow-[0_0_15px_#22c55e]" />
-            <p className="text-green-500 text-xl animate-pulse tracking-[0.5em] uppercase glow-text">Booting_System</p>
+          <div className="w-12 h-12 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin shadow-[0_0_15px_#22c55e]" />
+          <p className="text-green-500 text-xl animate-pulse tracking-[0.5em] uppercase glow-text">Booting_System</p>
         </div>
       </div>
     );
@@ -148,17 +159,17 @@ export default function MachineBuilder() {
               &gt; {notification.message}
             </div>
             <div className="mt-4 h-0.5 w-full bg-white/5 overflow-hidden">
-               <motion.div 
+              <motion.div
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
                 transition={{ duration: 5, ease: "linear" }}
                 className={`h-full ${notification.type === 'success' ? 'bg-green-400' : 'bg-red-400'}`}
-               />
+              />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* 1. HUD HEADER */}
       <div className="sticky top-0 z-50 bg-black/90 border-b border-green-900/50 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -173,30 +184,41 @@ export default function MachineBuilder() {
               <ProgressBadge step="03" label="ARCH" active={selectedModules.length > 0} />
             </div>
           </div>
-          
-          <button
-            onClick={handleCreateMachine}
-            disabled={isCreating}
-            className="group relative bg-green-500 hover:bg-white text-black px-10 py-3 text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(34,197,94,0.3)] disabled:opacity-30 overflow-hidden"
-          >
-            <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[45deg] -translate-x-full group-hover:animate-shine pointer-events-none" />
-            {isCreating ? <Activity className="animate-spin" size={16} /> : <Zap size={16} fill="currentColor" />}
-            Compile_Node
-          </button>
+
+          <div className="flex items-center gap-4">
+            {/* Phishing Generator Button */}
+            <button
+              onClick={() => setIsPhishingGeneratorOpen(true)}
+              className="group relative bg-yellow-500/20 hover:bg-yellow-500 text-yellow-400 hover:text-black px-6 py-3 text-xs font-black uppercase tracking-widest transition-all duration-300 border border-yellow-500/50 hover:border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)] overflow-hidden flex items-center gap-2"
+            >
+              <Mail size={16} />
+              Phishing_Lab
+            </button>
+
+            <button
+              onClick={handleCreateMachine}
+              disabled={isCreating}
+              className="group relative bg-green-500 hover:bg-white text-black px-10 py-3 text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(34,197,94,0.3)] disabled:opacity-30 overflow-hidden"
+            >
+              <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[45deg] -translate-x-full group-hover:animate-shine pointer-events-none" />
+              {isCreating ? <Activity className="animate-spin" size={16} /> : <Zap size={16} fill="currentColor" />}
+              Compile_Node
+            </button>
+          </div>
         </div>
       </div>
 
       <main className="container mx-auto px-6 py-12">
-        
+
         {/* PHASE 1: INITIALIZATION */}
         <section className="grid grid-cols-12 gap-10 mb-20 items-start">
           <div className="col-span-12 lg:col-span-5 space-y-6">
             <div className="flex items-center gap-4 text-green-500">
-              <TerminalSquare size={20} className="drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]"/>
+              <TerminalSquare size={20} className="drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
               <h2 className="text-xs font-black tracking-[0.4em] uppercase underline decoration-green-900 underline-offset-8">01_Identification</h2>
               <div className="flex-1 h-px bg-green-900/40" />
             </div>
-            
+
             <input
               type="text"
               value={machineName}
@@ -206,18 +228,18 @@ export default function MachineBuilder() {
             />
 
             <div className="bg-green-500/5 border border-green-900/30 p-6 rounded-sm shadow-inner glow-card">
-               <h3 className="text-[10px] font-black mb-5 tracking-[0.2em] text-green-700 uppercase">System_Telemetry</h3>
-               <div className="space-y-5">
-                  <StatBar label="Complexity" value={selectedModules.length * 20} color="green" />
-                  <StatBar label="Neural_Load" value={machineName.length > 0 ? 100 : 0} color="green" />
-               </div>
+              <h3 className="text-[10px] font-black mb-5 tracking-[0.2em] text-green-700 uppercase">System_Telemetry</h3>
+              <div className="space-y-5">
+                <StatBar label="Complexity" value={selectedModules.length * 20} color="green" />
+                <StatBar label="Neural_Load" value={machineName.length > 0 ? 100 : 0} color="green" />
+              </div>
             </div>
           </div>
 
           {/* SECTION 2: GLOWING SECTOR SELECTOR */}
           <div className="col-span-12 lg:col-span-7 space-y-6">
             <div className="flex items-center gap-4 text-green-500">
-              <Shield size={20} className="drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]"/>
+              <Shield size={20} className="drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
               <h2 className="text-xs font-black tracking-[0.4em] uppercase underline decoration-green-900 underline-offset-8">02_Sector_Select</h2>
               <div className="flex-1 h-px bg-green-900/40" />
             </div>
@@ -237,20 +259,20 @@ export default function MachineBuilder() {
         {/* PHASE 3: ARCHITECTURE (Locked Heights) */}
         <AnimatePresence>
           {selectedDomain && (
-            <motion.section 
+            <motion.section
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-8"
             >
               <div className="flex items-center gap-4 text-green-500">
-                <Layout size={20} className="drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]"/>
+                <Layout size={20} className="drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
                 <h2 className="text-xs font-black tracking-[0.4em] uppercase underline decoration-green-900 underline-offset-8">03_Tactical_Workbench</h2>
                 <div className="flex-1 h-px bg-green-900/40" />
               </div>
-              
+
               <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <div className="flex flex-col xl:flex-row gap-8 xl:h-[750px] items-stretch">
-                  
+
                   {/* Inventory Sidebar */}
                   <div className="w-full xl:w-80 flex flex-col border border-green-900/50 bg-black shadow-2xl h-[500px] xl:h-full glow-card">
                     <div className="p-4 border-b border-green-900/50 bg-green-900/10 flex justify-between items-center">
@@ -267,16 +289,16 @@ export default function MachineBuilder() {
 
                   {/* VIRTUAL TERMINAL CANVAS */}
                   <div className="flex-1 relative border-2 border-green-900/30 rounded-lg bg-[#010101] overflow-hidden group shadow-[inset_0_0_100px_rgba(0,0,0,1)] h-[600px] xl:h-full">
-                    
+
                     <div className="absolute inset-0 opacity-10 pointer-events-none font-mono text-[8px] leading-tight p-4 overflow-hidden select-none">
                       <div className="animate-pulse mb-2 text-green-400 tracking-[0.2em] font-bold underline">TERMINAL_DEBUG_STREAM</div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-green-900">
-                        {Array.from({length: 400}).map((_, i) => (
-                          <span key={i}>0x{Math.floor(Math.random()*0xFFFFFF).toString(16).toUpperCase()}</span>
+                        {Array.from({ length: 400 }).map((_, i) => (
+                          <span key={i}>0x{Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase()}</span>
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(#10b981_1px,transparent_1px)] bg-[size:32px_32px]" />
                     <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-green-500/30 m-3 rounded-tl-lg pointer-events-none" />
                     <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-green-500/30 m-3 rounded-br-lg pointer-events-none" />
@@ -315,8 +337,15 @@ export default function MachineBuilder() {
           )}
         </AnimatePresence>
       </main>
-      
+
       <Footer />
+
+      {/* Phishing Generator Modal */}
+      <PhishingGenerator
+        isOpen={isPhishingGeneratorOpen}
+        onClose={() => setIsPhishingGeneratorOpen(false)}
+        onEmailGenerated={setGeneratedPhishingEmail}
+      />
 
       <style>{`
         .glow-text { text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
@@ -363,7 +392,7 @@ function StatBar({ label, value, color }) {
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-[9px] font-black tracking-widest uppercase opacity-70 italic">
-        <span className="flex items-center gap-1.5 glow-text"><Activity size={10}/> {label}</span>
+        <span className="flex items-center gap-1.5 glow-text"><Activity size={10} /> {label}</span>
         <span>{value}%</span>
       </div>
       <div className="h-1 bg-black border border-green-900/30 rounded-full overflow-hidden">

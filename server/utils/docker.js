@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import process from 'process';
+import Machine from '../models/Machine.js';
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
@@ -66,8 +67,8 @@ export const buildDockerImage = async (domain, moduleId) => {
     console.log(`Building Docker image: ${imageName}`);
     console.log(`Module path: ${modulePath}`);
 
-    // Properly quote the path to handle spaces (especially on Windows)
-    const quotedPath = isWindows ? `"${modulePath}"` : `"${modulePath}"`;
+    // Properly quote the path to handle spaces (all platforms)
+    const quotedPath = `"${modulePath}"`;
     const { stdout, stderr } = await execAsync(
       `docker build -t ${imageName} ${quotedPath}`
     );
@@ -85,13 +86,18 @@ export const buildDockerImage = async (domain, moduleId) => {
 };
 
 // Run Docker container
-export const runDockerContainer = async (imageName, port, containerName, containerPort = 3000) => {
+export const runDockerContainer = async (imageName, port, containerName, containerPort = 3000, envVars = {}) => {
   try {
     console.log(`Running container: ${containerName} on port ${port} (internal: ${containerPort})`);
 
-    const { stdout } = await execAsync(
-      `docker run -d --name ${containerName} -p ${port}:${containerPort} ${imageName}`
-    );
+    // Build environment variables string
+    const envVarString = Object.entries(envVars)
+      .map(([key, value]) => `-e "${key}=${value}"`)
+      .join(' ');
+
+    const dockerCommand = `docker run -d --name ${containerName} -p ${port}:${containerPort} ${envVarString} ${imageName}`;
+
+    const { stdout } = await execAsync(dockerCommand);
 
     const containerId = stdout.trim();
     console.log(`Container started: ${containerId}`);
@@ -163,6 +169,11 @@ export const deployMachine = async (machineId, domain, modules) => {
     console.log(`\n🚀 Deploying machine ${machineId} with ${modules.length} vulnerabilities`);
     console.log(`Domain: ${domain}, Modules: ${modules.join(', ')}`);
 
+    // Fetch machine to get custom data
+    const machine = await Machine.findById(machineId);
+    if (!machine) {
+      throw new Error(`Machine ${machineId} not found`);
+    }
 
     // CRITICAL FIX: Deploy ALL modules together in one container
     // NOT just the first one - all vulnerabilities must co-exist
@@ -197,13 +208,35 @@ export const deployMachine = async (machineId, domain, modules) => {
     const containerName = `cyberforge-${machineId}`;
     const containerPort = primaryMetadata.port || 3000;
 
+    // Build environment variables from vulnerabilities and custom data
+    const envVars = {};
+
+    // Add flags for each vulnerability
+    machine.vulnerabilities.forEach((vuln) => {
+      const envKey = `FLAG_${vuln.moduleId.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+      envVars[envKey] = vuln.flag;
+    });
+
+    // Add custom data (e.g., generated phishing emails)
+    if (machine.customData && machine.customData.size > 0) {
+      for (const [key, value] of machine.customData) {
+        if (typeof value === 'object') {
+          envVars[`CUSTOM_${key.toUpperCase()}`] = JSON.stringify(value);
+        } else {
+          envVars[`CUSTOM_${key.toUpperCase()}`] = String(value);
+        }
+      }
+    }
+
     console.log(`Starting container ${containerName} on port ${port} (internal: ${containerPort})`);
+    console.log(`Environment variables:`, Object.keys(envVars));
 
     const runResult = await runDockerContainer(
       buildResult.imageName,
       port,
       containerName,
-      containerPort
+      containerPort,
+      envVars
     );
 
     if (!runResult.success) {

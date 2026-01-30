@@ -40,7 +40,7 @@ const generateUniqueFlag = (moduleId, machineId) => {
 // Create a new machine
 router.post('/create', authMiddleware, async (req, res) => {
   try {
-    const { name, domain, modules } = req.body;
+    const { name, domain, modules, customData } = req.body;
     const userId = req.userId;
     const teamName = req.teamName;
 
@@ -53,7 +53,7 @@ router.post('/create', authMiddleware, async (req, res) => {
     }
 
     // Validate domain
-    const validDomains = ['web', 'red_team', 'blue_team', 'cloud', 'forensics'];
+    const validDomains = ['web', 'red_team', 'blue_team', 'cloud', 'forensics', 'social_engineering'];
     if (!validDomains.includes(domain)) {
       return res.status(400).json({
         success: false,
@@ -184,6 +184,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       totalPoints,
       vulnerabilities,
       solutions: solutions,  // Store machine-specific solutions
+      customData: customData || new Map(),  // Store custom data for dynamic modules
       status: 'building'
     });
 
