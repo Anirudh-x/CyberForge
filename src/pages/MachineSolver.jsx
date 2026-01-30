@@ -53,7 +53,8 @@ const getSolutionObjective = (moduleId) => {
     env_vars: "Extract sensitive credentials from exposed environment variables.",
     memory_dump: "Analyze memory dumps to extract credentials, encryption keys, or other sensitive data.",
     disk_image: "Perform forensic analysis on disk images to recover deleted files and artifacts.",
-    hidden_files: "Locate hidden or concealed files using forensic techniques."
+    hidden_files: "Locate hidden or concealed files using forensic techniques.",
+    ransomware_attack_chain: "Analyze a realistic ransomware attack timeline following MITRE ATT&CK framework to understand each stage of the compromise."
   };
   return objectives[moduleId] || "Complete the challenge to capture the flag.";
 };
@@ -77,7 +78,8 @@ const getSolutionSteps = (moduleId) => {
     env_vars: ["Inspect application configuration files and environment", "Check for exposed .env files or debug endpoints", "Extract credentials from environment variables", "Use credentials to access protected resources and find the flag"],
     memory_dump: ["Load memory dump in forensic tools like Volatility", "Extract process information and network connections", "Dump process memory to find passwords or keys", "Locate and extract the flag from memory artifacts"],
     disk_image: ["Mount disk image using forensic tools", "Recover deleted files using file carving techniques", "Analyze file system metadata and timestamps", "Find the flag in recovered or hidden files"],
-    hidden_files: ["Use ls -la to show hidden files starting with .", "Check alternate data streams on NTFS systems", "Examine file system slack space", "Extract the flag from concealed locations"]
+    hidden_files: ["Use ls -la to show hidden files starting with .", "Check alternate data streams on NTFS systems", "Examine file system slack space", "Extract the flag from concealed locations"],
+    ransomware_attack_chain: ["Analyze initial access logs to find breach method", "Examine execution artifacts for malicious commands", "Identify persistence mechanisms in system configuration", "Trace lateral movement through network and authentication logs", "Review exfiltration logs for data theft evidence", "Decrypt files using recovered encryption keys"]
   };
   return steps[moduleId] || ["Analyze the challenge", "Identify vulnerabilities", "Exploit the weakness", "Capture the flag"];
 };
@@ -104,6 +106,18 @@ const getSolutionConcepts = (moduleId) => {
     hidden_files: ["File system structures", "Hidden attributes", "Steganography", "Alternate data streams"]
   };
   return concepts[moduleId] || ["Security fundamentals", "Attack methodology", "Defense mechanisms"];
+};
+
+const getRansomwareStageName = (stageIndex) => {
+  const stages = [
+    "Initial Access",
+    "Execution",
+    "Persistence",
+    "Lateral Movement",
+    "Exfiltration",
+    "Impact"
+  ];
+  return stages[stageIndex] || "Unknown Stage";
 };
 
 const MachineSolver = () => {
@@ -299,20 +313,29 @@ const MachineSolver = () => {
                       {isSolved ? <Unlock size={18} /> : <Lock size={18} />}
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className={`text-[8px] font-black tracking-[0.2em] ${isActive ? 'text-emerald-400' : 'text-zinc-700'}`}>VECTOR_0{idx + 1}</span>
-                      <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{vuln.moduleId.replace(/_/g, ' ')}</span>
-                    </div>
-                  </div>
+                      {vuln.moduleId === 'ransomware_attack_chain' ? (
+                        <>
+                          <span className={`text-[8px] font-black tracking-[0.2em] ${isActive ? 'text-emerald-400' : 'text-zinc-700'}`}>STAGE {idx + 1}</span>
+                          <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{getRansomwareStageName(idx)}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className={`text-[8px] font-black tracking-[0.2em] ${isActive ? 'text-emerald-400' : 'text-zinc-700'}`}>VECTOR_0{idx + 1}</span>
+                          <span className={`text-[12px] font-bold uppercase tracking-tighter ${isActive ? 'text-white' : 'text-zinc-500'}`}>{vuln.moduleId.replace(/_/g, ' ')}</span>
+                        </>
+                      )}
+                    </div >
+                  </div >
                   <div className={`font-mono text-[10px] font-black transition-colors relative z-10 ${isActive ? 'text-emerald-400' : 'text-emerald-900'}`}>
                     {vuln.points} XP
                   </div>
                   {isActive && <motion.div layoutId="active-marker" className="absolute left-0 top-0 w-[3px] h-full bg-emerald-400 shadow-[5px_0_15px_#10b981]" />}
-                </button>
+                </button >
               );
             })}
-          </div>
-        </div>
-      </div>
+          </div >
+        </div >
+      </div >
     );
   };
 
@@ -323,7 +346,10 @@ const MachineSolver = () => {
       tabs.push({ id: 'browser', label: 'INTERFACE', icon: <Globe size={20} /> });
     }
     if (machine.domain === 'red_team' || machine.domain === 'cloud' || machine.domain === 'forensics' || machine.terminalEnabled) tabs.push({ id: 'terminal', label: 'SHELL', icon: <TerminalIcon size={20} /> });
-    if (machine.domain === 'blue_team' || machine.domain === 'forensics') tabs.push({ id: 'files', label: 'BINARY', icon: <FileSearch size={20} /> });
+    if (machine.domain === 'blue_team' || machine.domain === 'forensics') {
+      const isRansomwareChain = machine.vulnerabilities?.some(v => v.moduleId === 'ransomware_attack_chain');
+      tabs.push({ id: 'files', label: isRansomwareChain ? 'INTERFACE' : 'BINARY', icon: <FileSearch size={20} /> });
+    }
     tabs.push({ id: 'flags', label: 'INFILTRATE', icon: <Flag size={20} /> });
 
     return (
@@ -347,8 +373,8 @@ const MachineSolver = () => {
     <div className="bg-[#020202] border-x border-b border-white/10 flex flex-col h-[750px] shadow-2xl overflow-hidden">
       <div className="flex justify-between items-center px-8 py-4 border-b border-white/5 bg-[#080808]">
         <div className="flex items-center gap-3 text-emerald-500/80">
-          <MailCheck size={18} className="text-emerald-400" />
-          <span className="text-[11px] font-black tracking-[0.4em] uppercase glow-text italic">Phishing Email</span>
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+          <span className="text-[11px] font-black tracking-[0.4em] uppercase glow-text italic">Live_Node_Signal</span>
         </div>
         <a href={machine.access?.url || machine.accessUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-emerald-500/20 rounded text-[10px] font-black text-emerald-600 hover:text-emerald-400 transition-all uppercase italic flex items-center gap-1">
           Open in New Tab <ArrowRightCircle size={14} className="inline ml-1" />
@@ -396,20 +422,39 @@ const MachineSolver = () => {
     );
   };
 
-  const renderFilesTab = () => (
-    <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
-      <div className="px-10 py-8 border-b border-white/5 bg-[#080808] flex items-center gap-6">
-        <div className="p-4 bg-emerald-500 text-black rounded shadow-[0_0_30px_#10b981] animate-pulse"><FileSearch size={24} /></div>
-        <div>
-          <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase italic">ENCRYPTED_VOLUMES_SCAN</h3>
-          <p className="text-[10px] text-emerald-800 font-bold tracking-widest mt-1 uppercase">Decoding file metadata...</p>
+  const renderFilesTab = () => {
+    const isRansomwareChain = machine.vulnerabilities?.some(v => v.moduleId === 'ransomware_attack_chain');
+    if (isRansomwareChain) {
+      return (
+        <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
+          <div className="px-10 py-8 border-b border-white/5 bg-[#080808] flex items-center gap-6">
+            <div className="p-4 bg-emerald-500 text-black rounded shadow-[0_0_30px_#10b981] animate-pulse"><Globe size={24} /></div>
+            <div>
+              <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase italic">RANSOMWARE_INTERFACE</h3>
+              <p className="text-[10px] text-emerald-800 font-bold tracking-widest mt-1 uppercase">Navigate attack stages...</p>
+            </div>
+          </div>
+          <div className="flex-1 bg-black">
+            <iframe src={machine.access?.url || machine.accessUrl} title={machine.name} className="w-full h-full border-none" />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="bg-[#020202] border-x border-b border-white/10 rounded-sm overflow-hidden flex flex-col h-[750px]">
+        <div className="px-10 py-8 border-b border-white/5 bg-[#080808] flex items-center gap-6">
+          <div className="p-4 bg-emerald-500 text-black rounded shadow-[0_0_30px_#10b981] animate-pulse"><FileSearch size={24} /></div>
+          <div>
+            <h3 className="text-sm font-black text-white tracking-[0.4em] uppercase italic">ENCRYPTED_VOLUMES_SCAN</h3>
+            <p className="text-[10px] text-emerald-800 font-bold tracking-widest mt-1 uppercase">Decoding file metadata...</p>
+          </div>
+        </div>
+        <div className="flex-1 bg-black">
+          <iframe src={machine.access?.url || machine.accessUrl} title={machine.name} className="w-full h-full border-none opacity-40 grayscale" />
         </div>
       </div>
-      <div className="flex-1 bg-black">
-        <iframe src={machine.access?.url || machine.accessUrl} title={machine.name} className="w-full h-full border-none opacity-40 grayscale" />
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderFlagsTab = () => (
     <div className="space-y-8 h-[750px] overflow-y-auto custom-scrollbar pr-6">
@@ -425,15 +470,24 @@ const MachineSolver = () => {
               <div className="flex items-center gap-10">
                 <span className="text-6xl font-black text-emerald-950/20 italic font-mono">0{idx + 1}</span>
                 <div className="space-y-2">
-                  <span className="text-[11px] font-black tracking-[0.5em] text-emerald-900 uppercase block pl-1 italic">SUB_PROCESS</span>
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{vuln.moduleId.replace(/_/g, ' ')}</h3>
-                </div>
-              </div>
+                  {vuln.moduleId === 'ransomware_attack_chain' ? (
+                    <>
+                      <span className="text-[11px] font-black tracking-[0.5em] text-emerald-900 uppercase block pl-1 italic">STAGE {idx + 1}</span>
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{getRansomwareStageName(idx)}</h3>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[11px] font-black tracking-[0.5em] text-emerald-900 uppercase block pl-1 italic">SUB_PROCESS</span>
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter glow-text underline decoration-emerald-900 decoration-4 underline-offset-8">{vuln.moduleId.replace(/_/g, ' ')}</h3>
+                    </>
+                  )}
+                </div >
+              </div >
               <div className="text-right bg-emerald-500/5 p-4 border border-emerald-500/10 rounded-sm">
                 <span className="text-[10px] font-black text-emerald-500/60 tracking-[0.4em] uppercase block mb-1">XP_ALLOCATION</span>
                 <span className="text-2xl font-black font-mono text-white glow-text">{vuln.points}</span>
               </div>
-            </div>
+            </div >
             {!isSolved ? (
               <form onSubmit={(e) => handleFlagSubmit(e, vuln.vulnerabilityInstanceId)} className="space-y-6 relative z-10">
                 <div className="flex gap-4">
@@ -461,10 +515,10 @@ const MachineSolver = () => {
                 <Unlock size={20} className="animate-pulse" /> DATA_NODE_EXTRACTED
               </div>
             )}
-          </div>
+          </div >
         );
       })}
-    </div>
+    </div >
   );
 
   const renderReportUpload = () => {

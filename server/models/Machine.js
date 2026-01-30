@@ -69,6 +69,9 @@ const machineSchema = new mongoose.Schema({
     points: Number,
     flag: String,           // Unique flag for THIS instance
     difficulty: String,
+    stage: Number,          // Stage number for multi-stage challenges like ransomware
+    stageName: String,      // Stage name for multi-stage challenges
+    mitreId: String,        // MITRE ATT&CK ID for the stage
     solvedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   }],
   // Machine-specific solutions (NOT generic)

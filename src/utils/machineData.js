@@ -26,7 +26,8 @@ export const modulesByDomain = {
   blue_team: [
     { id: 'log_analysis', name: 'Log Analysis Challenge', description: 'Detect intrusions from logs', difficulty: 'medium', points: 70 },
     { id: 'malware_detection', name: 'Malware Detection', description: 'Identify malicious software', difficulty: 'high', points: 90 },
-    { id: 'siem_alert', name: 'SIEM Alert Investigation', description: 'Analyze security alerts', difficulty: 'medium', points: 75 }
+    { id: 'siem_alert', name: 'SIEM Alert Investigation', description: 'Analyze security alerts', difficulty: 'medium', points: 75 },
+    { id: 'ransomware_attack_chain', name: 'Ransomware Attack Chain', description: 'Analyze realistic ransomware attack timeline (MITRE ATT&CK)', difficulty: 'high', points: 500 }
   ],
   cloud: [
     { id: 'public_bucket', name: 'Public Storage Bucket', description: 'Exposed cloud storage', difficulty: 'low', points: 50 },

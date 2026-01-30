@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { connectToDatabase } from './config/database.js';
+import { connectToDatabase, disconnectFromDatabase } from './config/database.js';
 import { authMiddleware } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
 import challengeRoutes from './routes/challenges.js';
@@ -38,6 +38,22 @@ app.use(cookieParser());
 
 // Connect to database
 connectToDatabase();
+
+// Graceful shutdown handling
+const gracefulShutdown = async () => {
+  console.log('Received shutdown signal, closing server gracefully...');
+  try {
+    await disconnectFromDatabase();
+    console.log('Database disconnected successfully');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -1,0 +1,11 @@
+/home/user/documents/
+  - financial_records.xlsx
+  - passwords.txt
+  - confidential_memo.pdf
+/var/backups/
+  - database_backup.sql
+  - user_credentials.enc
+/opt/database/
+  - customer_data.db
+  - api_keys.json
+# The flag is: FLAG{84dc06c52c77c98c}

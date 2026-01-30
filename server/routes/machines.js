@@ -5,6 +5,16 @@ import Machine from '../models/Machine.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { deployMachine, stopDockerContainer, getModuleMetadata } from '../utils/docker.js';
 
+// eslint-disable-next-line no-undef
+const processEnv = process.env;
+
+// Proper flag generation with HMAC (same as ransomware app)
+function generateFlag(stage, flagSecret = processEnv.FLAG_SECRET || 'CHANGE_THIS_IN_PRODUCTION') {
+  const hmac = crypto.createHmac('sha256', flagSecret);
+  hmac.update(`STAGE_${stage}`);
+  return `FLAG{${hmac.digest('hex').substring(0, 32)}}`;
+}
+
 const router = express.Router();
 
 // Helper function to generate unique vulnerability instance ID
@@ -65,43 +75,98 @@ router.post('/create', authMiddleware, async (req, res) => {
       try {
         const metadata = await getModuleMetadata(domain, moduleId);
         if (metadata && metadata.points) {
-          totalPoints += metadata.points;
+          // Special handling for ransomware_attack_chain - create 6 stages
+          if (moduleId === 'ransomware_attack_chain' && metadata.attack_stages) {
+            console.log(`🎯 Creating ransomware attack chain with ${metadata.attack_stages.length} stages`);
 
-          // Generate unique instance ID but use metadata flag (hardcoded)
-          const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, moduleId, i);
+            // Create a vulnerability instance for each attack stage
+            for (let stageIdx = 0; stageIdx < metadata.attack_stages.length; stageIdx++) {
+              const stage = metadata.attack_stages[stageIdx];
+              const stageModuleId = `${moduleId}_stage_${stage.stage}`;
+              const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, stageModuleId, stageIdx);
 
-          console.log(`🔍 Creating vulnerability for ${moduleId}:`);
-          console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
-          console.log(`   Flag from metadata: ${metadata.flag}`);
+              // Generate stage-specific flag using HMAC (same as app.js)
+              const stageFlag = generateFlag(stage.stage);
 
-          // Add vulnerability with unique instance ID and METADATA FLAG (hardcoded)
-          vulnerabilities.push({
-            vulnerabilityInstanceId: vulnerabilityInstanceId,
-            moduleId: moduleId,
-            route: metadata.route || `/${moduleId}`,
-            points: metadata.points,
-            flag: metadata.flag,  // Use hardcoded flag from metadata.json
-            difficulty: metadata.difficulty || 'medium',
-            solvedBy: []
-          });
+              totalPoints += stage.points;
 
-          // Store solution keyed by vulnerabilityInstanceId (NOT moduleId)
-          // This ensures each instance has its own solution data
-          solutions.set(vulnerabilityInstanceId, {
-            explanation: metadata.solution?.explanation || `Exploit the ${moduleId.replace(/_/g, ' ')} vulnerability to capture the flag.`,
-            steps: metadata.solution?.steps || [
-              `Navigate to ${metadata.route || '/' + moduleId}`,
-              `Identify the ${moduleId.replace(/_/g, ' ')} vulnerability`,
-              `Craft your exploit payload`,
-              `Execute the attack and capture the flag`
-            ],
-            payload: metadata.solution?.payload || 'Payload varies based on implementation',
-            hints: metadata.solution?.hints || [
-              `Look for input fields`,
-              `Try common ${moduleId.replace(/_/g, ' ')} payloads`,
-              `Check the response carefully`
-            ]
-          });
+              console.log(`🔍 Creating vulnerability for ${stageModuleId}:`);
+              console.log(`   Stage: ${stage.stage} - ${stage.name}`);
+              console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
+              console.log(`   Flag: ${stageFlag}`);
+              console.log(`   Points: ${stage.points}`);
+
+              vulnerabilities.push({
+                vulnerabilityInstanceId: vulnerabilityInstanceId,
+                moduleId: moduleId, // Keep original moduleId for grouping
+                route: metadata.route || `/${moduleId}?stage=${stage.name.toLowerCase().replace(/\s+/g, '_')}`,
+                points: stage.points,
+                flag: stageFlag,
+                difficulty: metadata.difficulty || 'high',
+                solvedBy: [],
+                stage: stage.stage,
+                stageName: stage.name,
+                mitreId: stage.mitre_id
+              });
+
+              // Store solution for this stage
+              solutions.set(vulnerabilityInstanceId, {
+                explanation: `Complete Stage ${stage.stage}: ${stage.name} (${stage.mitre_id}) - ${stage.description}. Analyze the attack artifacts and identify indicators of compromise.`,
+                steps: [
+                  `Access the ransomware attack chain interface`,
+                  `Navigate to Stage ${stage.stage}: ${stage.name}`,
+                  `Review the attack artifacts: logs, commands, and files`,
+                  `Identify the attack indicators following MITRE ATT&CK ${stage.mitre_id}`,
+                  `Submit the flag for this stage to proceed to the next`
+                ],
+                payload: `Stage ${stage.stage} artifacts include: ${stage.description}`,
+                hints: [
+                  `Follow the MITRE ATT&CK technique ${stage.mitre_id}`,
+                  `Analyze the provided logs, commands, and files carefully`,
+                  `Each stage builds on the previous one - complete them sequentially`
+                ]
+              });
+            }
+          } else {
+            // Standard module handling
+            totalPoints += metadata.points;
+
+            // Generate unique instance ID but use metadata flag (hardcoded)
+            const vulnerabilityInstanceId = generateVulnInstanceId(tempMachineId, moduleId, i);
+
+            console.log(`🔍 Creating vulnerability for ${moduleId}:`);
+            console.log(`   Instance ID: ${vulnerabilityInstanceId}`);
+            console.log(`   Flag from metadata: ${metadata.flag}`);
+
+            // Add vulnerability with unique instance ID and METADATA FLAG (hardcoded)
+            vulnerabilities.push({
+              vulnerabilityInstanceId: vulnerabilityInstanceId,
+              moduleId: moduleId,
+              route: metadata.route || `/${moduleId}`,
+              points: metadata.points,
+              flag: metadata.flag,  // Use hardcoded flag from metadata.json
+              difficulty: metadata.difficulty || 'medium',
+              solvedBy: []
+            });
+
+            // Store solution keyed by vulnerabilityInstanceId (NOT moduleId)
+            // This ensures each instance has its own solution data
+            solutions.set(vulnerabilityInstanceId, {
+              explanation: metadata.solution?.explanation || `Exploit the ${moduleId.replace(/_/g, ' ')} vulnerability to capture the flag.`,
+              steps: metadata.solution?.steps || [
+                `Navigate to ${metadata.route || '/' + moduleId}`,
+                `Identify the ${moduleId.replace(/_/g, ' ')} vulnerability`,
+                `Craft your exploit payload`,
+                `Execute the attack and capture the flag`
+              ],
+              payload: metadata.solution?.payload || 'Payload varies based on implementation',
+              hints: metadata.solution?.hints || [
+                `Look for input fields`,
+                `Try common ${moduleId.replace(/_/g, ' ')} payloads`,
+                `Check the response carefully`
+              ]
+            });
+          }
         }
       } catch (error) {
         console.error(`Error loading metadata for ${moduleId}:`, error);
