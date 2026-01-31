@@ -115,7 +115,7 @@ export default function Register() {
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="w-full bg-green-600 text-black py-2 font-mono text-lg shadow-md hover:bg-green-500 transition disabled:opacity-50"
