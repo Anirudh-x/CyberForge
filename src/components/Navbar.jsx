@@ -44,7 +44,7 @@ export default function Navbar() {
                 <Link to="/my-machines" className="hover:text-green-300 transition duration-200">
                   [ MY MACHINES ]
                 </Link>
-                <div className="text-green-300 font-bold ml-2">TEAM: {user?.teamName}</div>
+                <div className="text-green-300 font-bold ml-2">User: {user?.teamName}</div>
                 <button
                   onClick={handleLogout}
                   className="ml-4 px-4 py-2 text-black bg-green-600 hover:bg-green-500 transition font-mono shadow-md"
@@ -92,7 +92,7 @@ export default function Navbar() {
               <Link to="/my-machines" className="hover:text-green-300 transition duration-200" onClick={() => setIsOpen(false)}>
                 [ MY MACHINES ]
               </Link>
-              <div className="text-green-300 font-bold">TEAM: {user?.teamName}</div>
+              <div className="text-green-300 font-bold">User: {user?.teamName}</div>
               <button
                 onClick={() => {
                   handleLogout();
