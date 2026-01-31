@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function LeaderboardCard({ rank, username, solved, score, machines }) {
   const getRankEmoji = (rank) => {
     if (rank === 1) return '🥇';
@@ -13,7 +15,12 @@ export default function LeaderboardCard({ rank, username, solved, score, machine
       <span className={`text-2xl font-bold ${rank <= 3 ? 'text-yellow-400' : 'text-green-300'}`}>
         {getRankEmoji(rank)}
       </span>
-      <span className="text-green-400 font-bold truncate">{username}</span>
+      <Link 
+        to={`/profile/${username}`}
+        className="text-green-400 font-bold truncate hover:text-green-300 hover:underline transition-colors cursor-pointer"
+      >
+        {username}
+      </Link>
       <div className="text-center">
         <div className="text-green-500 text-xl font-bold">{solved}</div>
         <div className="text-green-600 text-xs">vulnerabilities</div>

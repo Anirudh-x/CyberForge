@@ -44,6 +44,9 @@ export default function Navbar() {
                 <Link to="/my-machines" className="hover:text-green-300 transition duration-200">
                   [ MY MACHINES ]
                 </Link>
+                <Link to="/profile" className="text-green-300 font-bold ml-2 hover:text-green-200 transition duration-200">
+                  TEAM: {user?.teamName}
+                </Link>
                 <div className="text-green-300 font-bold ml-2">User: {user?.teamName}</div>
                 <button
                   onClick={handleLogout}
@@ -91,6 +94,9 @@ export default function Navbar() {
               </Link>
               <Link to="/my-machines" className="hover:text-green-300 transition duration-200" onClick={() => setIsOpen(false)}>
                 [ MY MACHINES ]
+              </Link>
+              <Link to="/profile" className="text-green-300 font-bold hover:text-green-200 transition duration-200" onClick={() => setIsOpen(false)}>
+                TEAM: {user?.teamName}
               </Link>
               <div className="text-green-300 font-bold">User: {user?.teamName}</div>
               <button

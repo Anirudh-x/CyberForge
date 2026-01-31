@@ -157,4 +157,148 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// Get user profile
+router.get('/profile', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    res.json({ 
+      success: true,
+      profile: {
+        teamName: user.team_name,
+        email: user.email,
+        github: user.github,
+        field: user.field,
+        callsign: user.callsign,
+        primaryOS: user.primaryOS,
+        bio: user.bio,
+        yearsOfExperience: user.yearsOfExperience,
+        certifications: user.certifications,
+        linkedin: user.linkedin,
+        favoriteTools: user.favoriteTools,
+        score: user.score,
+        totalPoints: user.totalPoints,
+        redTeamPoints: user.redTeamPoints,
+        blueTeamPoints: user.blueTeamPoints,
+        webPoints: user.webPoints,
+        cloudPoints: user.cloudPoints,
+        forensicsPoints: user.forensicsPoints,
+        solvedVulnerabilities: user.solvedVulnerabilities,
+        solvedMachines: user.solvedMachines,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error fetching profile' 
+    });
+  }
+});
+
+// Get public profile by team name (no auth required)
+router.get('/profile/:teamName', async (req, res) => {
+  try {
+    const user = await User.findOne({ team_name: req.params.teamName }).select('-password -email');
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    res.json({ 
+      success: true,
+      profile: {
+        teamName: user.team_name,
+        github: user.github,
+        field: user.field,
+        callsign: user.callsign,
+        primaryOS: user.primaryOS,
+        bio: user.bio,
+        yearsOfExperience: user.yearsOfExperience,
+        certifications: user.certifications,
+        linkedin: user.linkedin,
+        favoriteTools: user.favoriteTools,
+        score: user.score,
+        totalPoints: user.totalPoints,
+        redTeamPoints: user.redTeamPoints,
+        blueTeamPoints: user.blueTeamPoints,
+        webPoints: user.webPoints,
+        cloudPoints: user.cloudPoints,
+        forensicsPoints: user.forensicsPoints,
+        solvedVulnerabilities: user.solvedVulnerabilities,
+        solvedMachines: user.solvedMachines,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Public profile fetch error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error fetching profile' 
+    });
+  }
+});
+
+// Update user profile
+router.put('/profile', authMiddleware, async (req, res) => {
+  try {
+    const { github, field, callsign, primaryOS, bio, yearsOfExperience, certifications, linkedin, favoriteTools } = req.body;
+    
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Update fields if provided
+    if (github !== undefined) user.github = github;
+    if (field !== undefined) user.field = field;
+    if (callsign !== undefined) user.callsign = callsign;
+    if (primaryOS !== undefined) user.primaryOS = primaryOS;
+    if (bio !== undefined) user.bio = bio;
+    if (yearsOfExperience !== undefined) user.yearsOfExperience = yearsOfExperience;
+    if (certifications !== undefined) user.certifications = certifications;
+    if (linkedin !== undefined) user.linkedin = linkedin;
+    if (favoriteTools !== undefined) user.favoriteTools = favoriteTools;
+
+    await user.save();
+
+    res.json({ 
+      success: true,
+      message: 'Profile updated successfully',
+      profile: {
+        github: user.github,
+        field: user.field,
+        callsign: user.callsign,
+        primaryOS: user.primaryOS,
+        bio: user.bio,
+        yearsOfExperience: user.yearsOfExperience,
+        certifications: user.certifications,
+        linkedin: user.linkedin,
+        favoriteTools: user.favoriteTools
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error updating profile' 
+    });
+  }
+});
+
 export default router;

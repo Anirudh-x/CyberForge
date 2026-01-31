@@ -8,6 +8,7 @@ import Leaderboard from './pages/Leaderboard';
 import MachineBuilder from './pages/MachineBuilder';
 import MyMachines from './pages/MyMachines';
 import MachineSolver from './pages/MachineSolver';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
           <Route path="/machine-builder" element={<MachineBuilder />} />
           <Route path="/my-machines" element={<MyMachines />} />
           <Route path="/solve/:id" element={<MachineSolver />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:teamName" element={<Profile />} />
         </Routes>
       </AuthProvider>
     </Router>
