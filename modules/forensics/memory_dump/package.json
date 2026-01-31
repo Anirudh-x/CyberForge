@@ -1,0 +1,12 @@
+{
+  "name": "memory-dump-lab",
+  "version": "1.0.0",
+  "description": "Memory Dump Analysis Forensics Lab",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

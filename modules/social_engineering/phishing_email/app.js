@@ -8,7 +8,9 @@ app.use(express.static('public'));
 // Phishing Email Training Module
 // This module provides an interactive interface for phishing awareness training
 
-const FLAG = process.env.FLAG || 'FLAG{PHISHING_AWARENESS_COMPLETE}';
+// Get unique flag from environment variable (set during deployment)
+const FLAG = process.env.FLAG_PHISHING_EMAIL || 'FLAG{PHISHING_AWARENESS_COMPLETE}';
+console.log('Phishing Email Lab initialized with flag:', FLAG);
 
 // Get custom phishing email data if available
 let customPhishingEmail = null;

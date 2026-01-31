@@ -5,7 +5,8 @@
   "difficulty": "low",
   "description": "Exploit weak SSH credentials to gain access and find the flag",
   "solve_method": "terminal",
-  "port": 22,
+  "port": 3000,
+  "ssh_port": 22,
   "flag": "FLAG{WEAK_SSH_CREDS}",
   "credentials": {
     "username": "ctfuser",
@@ -15,5 +16,12 @@
     "Try common passwords",
     "Username: ctfuser",
     "Once inside, look for the flag in /root/"
+  ],
+  "points": 50,
+  "learning_objectives": [
+    "Understand SSH authentication vulnerabilities",
+    "Practice credential guessing techniques",
+    "Learn basic Linux privilege escalation",
+    "Experience real-world weak credential attacks"
   ]
 }
