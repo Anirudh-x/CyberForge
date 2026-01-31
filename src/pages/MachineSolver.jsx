@@ -127,10 +127,7 @@ const MachineSolver = () => {
   const [machine, setMachine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // Default to INTERFACE for web, cloud, social_engineering; else fallback to flags
-  const [activeTab, setActiveTab] = useState(() => {
-    return ['web', 'cloud', 'social_engineering'].includes(machine?.domain) ? 'browser' : 'flags';
-  });
+  const [activeTab, setActiveTab] = useState('browser');
   const [flagInputs, setFlagInputs] = useState({});
   const [flagResults, setFlagResults] = useState({});
   const [submittingFlags, setSubmittingFlags] = useState({});
@@ -142,6 +139,20 @@ const MachineSolver = () => {
   const [showSolutions, setShowSolutions] = useState(false);
   const [machineSolutions, setMachineSolutions] = useState(null);
   const [allUserMachines, setAllUserMachines] = useState([]);
+
+  // Set the correct default tab based on machine domain after it loads
+  useEffect(() => {
+    if (machine) {
+      // For domains with GUI/web interface, default to browser tab
+      if (['web', 'cloud', 'social_engineering'].includes(machine.domain)) {
+        setActiveTab('browser');
+      } 
+      // For red_team, blue_team, forensics - default to shell tab
+      else if (['red_team', 'blue_team', 'forensics'].includes(machine.domain)) {
+        setActiveTab('shell');
+      }
+    }
+  }, [machine]);
 
   useEffect(() => {
     if (!isAuthenticated) {

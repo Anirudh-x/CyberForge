@@ -19,6 +19,43 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Profile fields
+  github: {
+    type: String,
+    default: ''
+  },
+  field: {
+    type: String,
+    default: 'Red Teaming'
+  },
+  callsign: {
+    type: String,
+    default: ''
+  },
+  primaryOS: {
+    type: String,
+    default: 'Kali Linux'
+  },
+  bio: {
+    type: String,
+    default: ''
+  },
+  yearsOfExperience: {
+    type: String,
+    default: ''
+  },
+  certifications: {
+    type: String,
+    default: ''
+  },
+  linkedin: {
+    type: String,
+    default: ''
+  },
+  favoriteTools: {
+    type: String,
+    default: ''
+  },
   score: {
     type: Number,
     default: 0
