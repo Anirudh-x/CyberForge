@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+// Get unique flag from environment variable (set during deployment)
+const FLAG = process.env.FLAG_MEMORY_DUMP || 'FLAG{MEMORY_FORENSICS_MASTER}';
+console.log('Memory Dump Analysis Lab initialized with flag:', FLAG);
 
 // Simulated memory dump data
 const memoryData = {
@@ -16,7 +20,7 @@ const memoryData = {
     'Password: TempPass2026!',
     'Connecting to C2 server: evil.com',
     'Encrypting files...',
-    'FLAG{MEMORY_FORENSICS_MASTER}',
+    FLAG,
     'Exfiltrating data to: 192.168.1.100',
     'Keylogger active',
     'Screenshot captured'
@@ -184,6 +188,7 @@ app.get('/api/connections', (req, res) => {
   res.json({ connections: memoryData.networkConnections });
 });
 
-app.listen(PORT, () => {
-  console.log(`Memory Dump lab running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Memory Dump Analysis Lab running on port ${PORT}`);
+  console.log(`Flag: ${FLAG}`);
 });

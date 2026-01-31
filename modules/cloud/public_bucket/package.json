@@ -1,0 +1,12 @@
+{
+  "name": "public-bucket-lab",
+  "version": "1.0.0",
+  "description": "Public Storage Bucket Vulnerability Lab",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

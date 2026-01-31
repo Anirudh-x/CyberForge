@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+// Get unique flag from environment variable (set during deployment)
+const FLAG = process.env.FLAG_PUBLIC_BUCKET || 'FLAG{PUBLIC_BUCKET_EXPOSED}';
+console.log('Public Bucket Lab initialized with flag:', FLAG);
 
 // Simulated S3 bucket data
 const bucketData = {
@@ -21,7 +25,7 @@ const credentials = {
   aws_access_key: 'AKIAIOSFODNN7EXAMPLE',
   aws_secret_key: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
   database_password: 'SuperSecretPass123!',
-  flag: 'FLAG{PUBLIC_BUCKET_EXPOSED}'
+  flag: FLAG
 };
 
 app.use(express.json());
@@ -157,7 +161,7 @@ Database Password: ${credentials.database_password}
 Flag: ${credentials.flag}
 `);
   } else if (filename === 'flag.txt') {
-    res.send('FLAG{PUBLIC_BUCKET_EXPOSED}');
+    res.send(FLAG);
   } else {
     res.status(404).json({ error: 'File not found or access denied' });
   }
@@ -168,6 +172,7 @@ app.get('/api/credentials', (req, res) => {
   res.json(credentials);
 });
 
-app.listen(PORT, () => {
-  console.log(`Cloud Storage lab running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Public Bucket Lab running on port ${PORT}`);
+  console.log(`Flag: ${FLAG}`);
 });

@@ -1,25 +1,24 @@
 {
+  "id": "phishing_email",
   "name": "Phishing Email Generator",
-  "description": "Generate realistic phishing emails for security awareness training",
+  "domain": "social_engineering",
   "difficulty": "medium",
-  "points": 60,
-  "category": "social_engineering",
-  "route": "/phishing",
+  "description": "Analyze phishing emails and identify social engineering techniques to find the hidden flag",
   "solve_method": "gui",
+  "port": 3000,
+  "terminal_enabled": false,
+  "points": 60,
   "flag": "FLAG{PHISHING_AWARENESS_COMPLETE}",
-  "solution": {
-    "explanation": "This module teaches you to recognize phishing email patterns and social engineering techniques.",
-    "steps": [
-      "Analyze the generated phishing email carefully",
-      "Identify all the red flags present in the email",
-      "Understand the social engineering technique being used",
-      "Learn to recognize similar patterns in real-world scenarios"
-    ],
-    "hints": [
-      "Look for urgency tactics in the email",
-      "Check the sender information carefully",
-      "Verify any links before clicking",
-      "Be suspicious of requests for sensitive information"
-    ]
-  }
+  "hints": [
+    "Look for urgency tactics in the email",
+    "Check the sender information carefully",
+    "Inspect any encoded tokens or reference IDs",
+    "URLs and links often hide important information"
+  ],
+  "learning_objectives": [
+    "Understand phishing email patterns",
+    "Learn social engineering techniques",
+    "Practice identifying red flags in emails",
+    "Recognize different difficulty levels of phishing attacks"
+  ]
 }
