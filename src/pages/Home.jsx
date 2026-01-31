@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import Chatbot from '../components/Chatbot';
 import { useAuth } from '../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion'; // For the smooth system entry
-import { Bot, X, ShieldAlert, Cpu, Network, Zap, Activity, Globe, Layers, Monitor, ShieldCheck, Trophy, Terminal as TerminalIcon, Cpu as Brain, Command, CheckCircle2, AlertCircle } from 'lucide-react'; 
+import { Bot, X, ShieldAlert, Cpu, Network, Zap, Activity, Globe, Layers, Monitor, ShieldCheck, Trophy, Terminal as TerminalIcon, Cpu as Brain, Command, CheckCircle2, AlertCircle } from 'lucide-react';
 import '../styles/blink.css';
 
 export default function Home() {
@@ -94,17 +94,17 @@ export default function Home() {
     setTimeout(() => {
       setIsForging(false);
       triggerTacticalAlert("COMPILATION_COMPLETE: Machine Instances Ready.", "SUCCESS");
-    }, 3000); 
+    }, 3000);
   };
 
   return (
     <div className="relative bg-[#050505] min-h-screen selection:bg-green-500 selection:text-black overflow-x-hidden hacker-font">
       <div className="fixed inset-0 hacker-grid opacity-30 pointer-events-none" />
-      
+
       {/* --- TACTICAL ALERT OVERLAY --- */}
       <AnimatePresence>
         {tacticalAlert && (
-          <motion.div 
+          <motion.div
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
@@ -129,7 +129,7 @@ export default function Home() {
                 </button>
               </div>
               <div className="h-0.5 w-full bg-white/5">
-                <motion.div 
+                <motion.div
                   initial={{ width: "100%" }}
                   animate={{ width: "0%" }}
                   transition={{ duration: 4, ease: "linear" }}
@@ -204,9 +204,9 @@ export default function Home() {
             <div className="h-px flex-grow bg-gradient-to-r from-[#39FF14]/40 to-transparent" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <StatCard icon={<ShieldAlert className="text-red-500 shadow-red-500"/>} label="THREAT_LEVEL" value="ELEVATED" progress="70%" />
-            <StatCard icon={<Activity className="text-blue-500 shadow-blue-500"/>} label="TRAFFIC_LOAD" value="1.2 GB/S" progress="45%" />
-            <StatCard icon={<Zap className="text-[#39FF14] shadow-[#39FF14]"/>} label="NODE_POWER" value="OPTIMAL" progress="100%" />
+            <StatCard icon={<ShieldAlert className="text-red-500 shadow-red-500" />} label="THREAT_LEVEL" value="ELEVATED" progress="70%" />
+            <StatCard icon={<Activity className="text-blue-500 shadow-blue-500" />} label="TRAFFIC_LOAD" value="1.2 GB/S" progress="45%" />
+            <StatCard icon={<Zap className="text-[#39FF14] shadow-[#39FF14]" />} label="NODE_POWER" value="OPTIMAL" progress="100%" />
           </div>
         </div>
 
@@ -230,27 +230,27 @@ export default function Home() {
               </div>
             </div>
             <div className="p-12 relative bg-black/40 grid md:grid-cols-2 gap-20 z-10 text-left">
-                <div className="space-y-10">
-                  <h3 className="text-4xl font-black text-white italic tracking-tighter decoration-[#39FF14] underline underline-offset-8">{modules[activeIdx].title}</h3>
-                  <div className="space-y-4">
-                    <span className="text-[10px] text-[#39FF14] font-bold uppercase tracking-[0.5em] animate-pulse">Live_Telemetry_Stream_Turbo</span>
-                    <div className="glass-morphism bg-black/60 p-6 border border-[#39FF14]/30 rounded-2xl h-56 overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
-                      {liveLogs.map((log, i) => <p key={i} className="text-sm mb-1 font-mono text-[#39FF14]/80 tracking-widest">{log}</p>)}
+              <div className="space-y-10">
+                <h3 className="text-4xl font-black text-white italic tracking-tighter decoration-[#39FF14] underline underline-offset-8">{modules[activeIdx].title}</h3>
+                <div className="space-y-4">
+                  <span className="text-[10px] text-[#39FF14] font-bold uppercase tracking-[0.5em] animate-pulse">Live_Telemetry_Stream_Turbo</span>
+                  <div className="glass-morphism bg-black/60 p-6 border border-[#39FF14]/30 rounded-2xl h-56 overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
+                    {liveLogs.map((log, i) => <p key={i} className="text-sm mb-1 font-mono text-[#39FF14]/80 tracking-widest">{log}</p>)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col justify-between">
+                <div className="space-y-6">
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Attack_Vectors</p>
+                  {modules[activeIdx].vectors.map((v, i) => (
+                    <div key={i} className="flex items-center gap-5 text-[#39FF14] hover:translate-x-2 transition-transform cursor-pointer group">
+                      <div className="w-1.5 h-1.5 bg-[#39FF14] rounded-full shadow-[0_0_10px_#39FF14]" />
+                      <span className="text-md font-bold italic tracking-tighter">{v}</span>
                     </div>
-                  </div>
+                  ))}
                 </div>
-                <div className="flex flex-col justify-between">
-                  <div className="space-y-6">
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Attack_Vectors</p>
-                    {modules[activeIdx].vectors.map((v, i) => (
-                      <div key={i} className="flex items-center gap-5 text-[#39FF14] hover:translate-x-2 transition-transform cursor-pointer group">
-                        <div className="w-1.5 h-1.5 bg-[#39FF14] rounded-full shadow-[0_0_10px_#39FF14]" />
-                        <span className="text-md font-bold italic tracking-tighter">{v}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => triggerTacticalAlert(`EXPLOIT_DEPLOYED::${modules[activeIdx].id}`, "SUCCESS")} className="mt-16 w-full py-6 glass-morphism border-2 border-[#39FF14] text-[#39FF14] font-black uppercase tracking-[0.8em] transition-all hover:bg-[#39FF14] hover:text-black shadow-[0_0_40px_rgba(57,255,20,0.5)] active:scale-95">RUN_INITIALIZER</button>
-                </div>
+                <button onClick={() => triggerTacticalAlert(`EXPLOIT_DEPLOYED::${modules[activeIdx].id}`, "SUCCESS")} className="mt-16 w-full py-6 glass-morphism border-2 border-[#39FF14] text-[#39FF14] font-black uppercase tracking-[0.8em] transition-all hover:bg-[#39FF14] hover:text-black shadow-[0_0_40px_rgba(57,255,20,0.5)] active:scale-95">RUN_INITIALIZER</button>
+              </div>
             </div>
           </div>
         </div>
@@ -311,23 +311,23 @@ export default function Home() {
                   <span className="text-[10px] text-[#39FF14] uppercase tracking-[0.4em] font-bold font-mono underline decoration-green-900">Terminal_02: {selectedSector}_Matrix</span>
                 </div>
                 <div className="grid grid-cols-2 gap-12 text-left">
-                   <div className="space-y-4">
-                     <p className="text-[10px] text-zinc-600 uppercase tracking-[0.3em] font-black border-b border-zinc-900 pb-2 italic">Instance_Specs</p>
-                     <div className="grid grid-cols-1 gap-2 text-[11px] font-mono uppercase text-white tracking-widest">
-                       <p><span className="text-[#00F0FF]">&gt;</span> OS: {sectorData[selectedSector].specs.os}</p>
-                       <p><span className="text-[#00F0FF]">&gt;</span> RAM: {sectorData[selectedSector].specs.ram}</p>
-                       <p><span className="text-[#00F0FF]">&gt;</span> NET: {sectorData[selectedSector].specs.net}</p>
-                       <p><span className="text-[#00F0FF]">&gt;</span> KERN: {sectorData[selectedSector].specs.kern}</p>
-                     </div>
-                   </div>
-                   <div className="space-y-4">
-                     <p className="text-[10px] text-zinc-600 uppercase tracking-[0.3em] font-black border-b border-zinc-900 pb-2 italic">Threat_List</p>
-                     <div className="flex flex-wrap gap-2">
-                        {sectorData[selectedSector].vulns.map(v => (
-                          <span key={v} className="px-2 py-1 bg-[#39FF14]/5 border border-[#39FF14]/30 text-[#39FF14] text-[9px] font-bold tracking-tighter">CVE_{v}</span>
-                        ))}
-                     </div>
-                   </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-[0.3em] font-black border-b border-zinc-900 pb-2 italic">Instance_Specs</p>
+                    <div className="grid grid-cols-1 gap-2 text-[11px] font-mono uppercase text-white tracking-widest">
+                      <p><span className="text-[#00F0FF]">&gt;</span> OS: {sectorData[selectedSector].specs.os}</p>
+                      <p><span className="text-[#00F0FF]">&gt;</span> RAM: {sectorData[selectedSector].specs.ram}</p>
+                      <p><span className="text-[#00F0FF]">&gt;</span> NET: {sectorData[selectedSector].specs.net}</p>
+                      <p><span className="text-[#00F0FF]">&gt;</span> KERN: {sectorData[selectedSector].specs.kern}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] text-zinc-600 uppercase tracking-[0.3em] font-black border-b border-zinc-900 pb-2 italic">Threat_List</p>
+                    <div className="flex flex-wrap gap-2">
+                      {sectorData[selectedSector].vulns.map(v => (
+                        <span key={v} className="px-2 py-1 bg-[#39FF14]/5 border border-[#39FF14]/30 text-[#39FF14] text-[9px] font-bold tracking-tighter">CVE_{v}</span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
